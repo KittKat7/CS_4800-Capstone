@@ -11,7 +11,7 @@ class Chat:
     def updateMessageHistory(self, Message) -> None:
         """
         """
-        #TODO
+        # TODO
     
     def getMessageHistory(self) -> list[Message]:
         """
