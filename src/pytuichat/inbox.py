@@ -54,6 +54,8 @@ def runInbox():
     # create socker server
     server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     server.bind(socketPath)
+    os.chmod(socketPath, 666)
+
 
     server.listen(1)
 
