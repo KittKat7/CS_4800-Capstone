@@ -1,5 +1,6 @@
 import socket
 import os
+import json
 
 from message import *
 from contact import *
@@ -39,7 +40,10 @@ class Inbox:
         # TODO
 
 
-def runInbox():
+def runInbox() -> None:
+
+    inbox: Inbox = Inbox()
+
     # INBOX RUNNER
     # init sockets
     socketPath = "/tmp/pytuichat_" + os.getlogin()
@@ -52,7 +56,7 @@ def runInbox():
             raise
 
     # create socker server
-    server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    server: socket.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     server.bind(socketPath)
     os.chmod(socketPath, 666)
 
@@ -60,9 +64,9 @@ def runInbox():
     server.listen(1)
 
     while True:
-        handleConnect(server)
+        handleConnect(server, inbox)
 
-def handleConnect(server):
+def handleConnect(server: socket.socket, inbox: Inbox) -> None:
     """TODO"""
     # TODO
     connection, address = server.accept()
@@ -75,7 +79,11 @@ def handleConnect(server):
             data = connection.recv(1024)
             if not data:
                 break
-            print('Received data:', data.decode())
+            
+            dataStr: str = data.decode()
+            dataObj: object = json.loads(dataStr)
+            dmessage: DeliveryMessage = DeliveryMessage.fromJsonObj(dataObj)
+
 
             # Send a response back to the client
             response = 'Hello from the server!' + address + ";"
