@@ -25,6 +25,32 @@ class Message:
         self._recieved: datetime
         self._sender: Contact
 
+    def toJsonObj(self) -> object:
+        """
+        Turns this instance of Message into a json compatable object.
+        """
+        jsonObj: dict[str, object] = {
+            "content": self._content,
+            "status" : self._status,
+            "sent": self._sent,
+            "received" : self._recieved,
+            "sender": self._sender
+        }
+        return jsonObj
+
+    def fromJsonObj(jsonObj: object) -> 'DeliveryMessage':
+        """
+        Returns a new Message from a provided json compatable object.
+        """
+        obj: dict = cast(dict, jsonObj)
+        message: Message = Message()
+        message._content = obj["content"]
+        message._status = obj["status"]
+        message._sent = obj["sent"]
+        message._recieved = obj["received"]
+        message._sender = obj["sender"]
+        return message
+
 class DeliveryMessage:
     """
     An object containing a Message and the info needed to send it. The extra
