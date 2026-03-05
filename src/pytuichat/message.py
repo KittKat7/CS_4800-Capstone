@@ -60,13 +60,31 @@ class DeliveryMessage:
     recieved it, they are removed from the list. This list is also not passed to
     the recipient.
     """
-    def __init__(self):
+    def __init__(self, message, sendingTo, recipients):
         """
         Constructor
         """
         self._message: Message
         self._sendingTo: list[Contact]
         self._recipients: list[Contact]
+
+    def getMessage(self) -> Message:
+        """
+        Returns the message contained.
+        """
+        return self._message
+    
+    def getSendingTo(self) -> list[Contact]:
+        """
+        Returns a list of who still needs the message
+        """
+        return self._sendingTo
+
+    def getRecipients(self) -> list[Contact]:
+        """
+        Returns the designated recipients of the message
+        """
+        return self._recipients
 
     def toJsonObj(self) -> object:
         """
@@ -84,8 +102,9 @@ class DeliveryMessage:
         Returns a new DeliveryMessage from a provided json compatable object.
         """
         obj: dict = cast(dict, jsonObj)
-        dmessage: DeliveryMessage = DeliveryMessage()
-        dmessage._message = obj["message"]
-        dmessage._sendingTo = obj["sendingTo"]
-        dmessage._recipients = obj["recipients"]
+        dmessage: DeliveryMessage = DeliveryMessage(
+            obj["message"],
+            obj["sendingTo"],
+            obj["recipients"]
+        )
         return dmessage

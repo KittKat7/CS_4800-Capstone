@@ -16,6 +16,23 @@ class Inbox:
     
     def getChats(self) -> list[Chat]:
         return self._chats
+
+    def _findOrCreateChat(self, contacts: list[Contact]) -> Chat:
+        """
+        Find a specific chat. If the chat does not exist, create and return it.
+        """
+        for ch in self._chats:
+            if len(ch._participants) == len(contacts):
+                isMatch: bool = True
+                for c in contacts:
+                    if c not in ch._participants:
+                        isMatch = False
+                if isMatch:
+                    return ch
+
+        # TODO add specific make chat method
+        chh: Chat = Chat(contacts)
+        return chh
     
     def sendMessage(self, contact: Contact, message: Message) -> None:
         """
@@ -34,9 +51,13 @@ class Inbox:
         # TODO
         return False
     
-    def _onMessageRecieved(self, message: Message) -> None:
+    def _onMessageRecieved(self, dmessage: DeliveryMessage) -> None:
         """
+        Handles when a message is recieved. Provided a Delivery Message, add the
+        message to the relevent chat.
         """
+        c: Chat = self._findOrCreateChat(dmessage._recipients)
+        c.updateMessageHistory(dmessage.getMessage)
         # TODO
 
 
@@ -83,6 +104,8 @@ def handleConnect(server: socket.socket, inbox: Inbox) -> None:
             dataStr: str = data.decode()
             dataObj: object = json.loads(dataStr)
             dmessage: DeliveryMessage = DeliveryMessage.fromJsonObj(dataObj)
+
+            inbox._onMessageRecieved(dmessage)
 
 
             # Send a response back to the client

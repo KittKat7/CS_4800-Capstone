@@ -4,15 +4,19 @@ from contact import *
 from typing import cast
 
 class Chat:
-    def __init__(self):
+    def __init__(self, contacts):
         self._numUnread: int
-        self._participants: list[Contact]
+        self._participants: list[Contact] = contacts
         self._history: list[Message]
     
     def updateMessageHistory(self, Message) -> None:
         """
+        Adds a new message to message history and increases the number of unread
+        messages.
         """
-        # TODO
+        self._history = [Message] + self._history
+        self._numUnread += 1
+        # TODO save persistant
     
     def getMessageHistory(self) -> list[Message]:
         """
