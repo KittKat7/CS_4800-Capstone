@@ -18,8 +18,14 @@ class Message:
     """
     A message which will be stored in a Chat.
     """
-    def __init__(self):
-        self._content: str
+    def __init__(
+    self,
+    content: str,
+    sender: Contact,
+    status: MessageStatus = MessageStatus.UNREAD,
+    sent: datetime = datetime.now(),
+    recieved: datetime = datetime.now()):
+        self._content: str = ""
         self._status: MessageStatus
         self._sent: datetime
         self._recieved: datetime
@@ -38,17 +44,18 @@ class Message:
         }
         return jsonObj
 
+    @staticmethod
     def fromJsonObj(jsonObj: object) -> 'DeliveryMessage':
         """
         Returns a new Message from a provided json compatable object.
         """
         obj: dict = cast(dict, jsonObj)
-        message: Message = Message()
-        message._content = obj["content"]
-        message._status = obj["status"]
-        message._sent = obj["sent"]
-        message._recieved = obj["received"]
-        message._sender = obj["sender"]
+        message: Message = Message(
+            content=obj["content"],
+            sender=obj["sender"],
+            status=obj["status"],
+            sent=obj["sent"],
+            recieved=obj["received"])
         return message
 
 class DeliveryMessage:
@@ -97,6 +104,7 @@ class DeliveryMessage:
         }
         return jsonObj
 
+    @staticmethod
     def fromJsonObj(jsonObj: object) -> 'DeliveryMessage':
         """
         Returns a new DeliveryMessage from a provided json compatable object.
