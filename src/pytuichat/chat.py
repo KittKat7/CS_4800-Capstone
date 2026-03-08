@@ -5,9 +5,9 @@ from typing import cast
 
 class Chat:
     def __init__(self, contacts):
-        self._numUnread: int
+        self._numUnread: int = 0
         self._participants: list[Contact] = contacts
-        self._history: list[Message]
+        self._history: list[Message] = []
     
     def updateMessageHistory(self, Message) -> None:
         """
@@ -16,6 +16,7 @@ class Chat:
         """
         self._history = [Message] + self._history
         self._numUnread += 1
+        print("Update persist messages")
         # TODO save persistant
     
     def getMessageHistory(self) -> list[Message]:

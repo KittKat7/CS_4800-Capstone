@@ -25,11 +25,11 @@ class Message:
     status: MessageStatus = MessageStatus.UNREAD,
     sent: datetime = datetime.now(),
     recieved: datetime = datetime.now()):
-        self._content: str = ""
-        self._status: MessageStatus
-        self._sent: datetime
-        self._recieved: datetime
-        self._sender: Contact
+        self._content: str = content
+        self._status: MessageStatus = status
+        self._sent: datetime = sent
+        self._recieved: datetime = recieved
+        self._sender: Contact = sender
 
     def toJsonObj(self) -> object:
         """
@@ -71,9 +71,9 @@ class DeliveryMessage:
         """
         Constructor
         """
-        self._message: Message
-        self._sendingTo: list[Contact]
-        self._recipients: list[Contact]
+        self._message: Message = message
+        self._sendingTo: list[Contact] = sendingTo
+        self._recipients: list[Contact] = recipients
 
     def getMessage(self) -> Message:
         """
@@ -110,6 +110,7 @@ class DeliveryMessage:
         Returns a new DeliveryMessage from a provided json compatable object.
         """
         obj: dict = cast(dict, jsonObj)
+        print(obj)
         dmessage: DeliveryMessage = DeliveryMessage(
             obj["message"],
             obj["sendingTo"],

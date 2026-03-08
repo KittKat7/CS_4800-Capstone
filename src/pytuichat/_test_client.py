@@ -9,7 +9,11 @@ socket_path = '/tmp/pytuichat_' + sys.argv[1]
 client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 
 # Connect to the server
-client.connect(socket_path)
+try:
+    client.connect(socket_path)
+except:
+    print("NOPE!!! 404")
+    sys.exit()
 
 # Send a message to the server
 message = 'Hello from the client!'

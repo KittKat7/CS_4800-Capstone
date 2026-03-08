@@ -8,11 +8,14 @@ class ContactStatus(Enum):
     BLOCKED = 4
 
 class Contact:
-    def __init__(self):
-        self._username: str
-        self._displayname: str
-        self._status: ContactStatus
-        self._isBlocked: bool
+    def __init__(self, username: str):
+        self._username: str = username
+        self._displayname: str = ""
+        self._status: ContactStatus = ContactStatus.ONLINE
+        self._isBlocked: bool = False
+    
+    def getUsername(self) -> str:
+        return self._username
 
     def toJsonObj(self) -> object:
         """
@@ -26,13 +29,13 @@ class Contact:
         }
         return jsonObj
 
+    @staticmethod
     def fromJsonObj(jsonObj: object) -> 'Contact':
         """
         Returns a new Message from a provided json compatable object.
         """
         obj: dict = cast(dict, jsonObj)
-        contact: Contact = Contact()
-        contact._username = obj["username"]
+        contact: Contact = Contact(obj["username"])
         contact._displayname = obj["displayname"]
         contact._status = obj["status"]
         contact._isBlocked = obj["isBlocked"]
