@@ -41,9 +41,17 @@ class Inbox:
     
     def isContactSendable(self, contact: Contact) -> bool:
         """
+        Returns true if the socket for the client exists, else return false.
         """
-        # TODO
-        return False
+        # Connect to the contacts server if possible
+        socket_path = "/tmp/pytuichat_" + contact.getUsername()
+        client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        try:
+            client.connect(socket_path)
+        except:
+            return False
+        client.close()
+        return True
 
     def _deliverMessage(self, contact: Contact, message: DeliveryMessage) -> bool:
         """
