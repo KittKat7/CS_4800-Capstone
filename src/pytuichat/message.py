@@ -45,7 +45,7 @@ class Message:
         return jsonObj
 
     @staticmethod
-    def fromJsonObj(jsonObj: object) -> 'DeliveryMessage':
+    def fromJsonObj(jsonObj: object) -> 'Message':
         """
         Returns a new Message from a provided json compatable object.
         """
