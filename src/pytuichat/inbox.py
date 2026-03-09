@@ -10,8 +10,8 @@ from spit import *
 
 class Inbox:
     def __init__(self):
-        self._contacts: list[str]
-        self._chats: list[Chat]
+        self._contacts: list[str] = []
+        self._chats: list[Chat] = []
 
     def getChats(self) -> list[Chat]:
         return self._chats

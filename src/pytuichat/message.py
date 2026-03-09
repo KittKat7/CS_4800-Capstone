@@ -99,8 +99,8 @@ class DeliveryMessage:
         """
         jsonObj: dict[str, object] = {
             "message": self._message.toJsonObj(),
-            "sendingTo": self._sendingTo,
-            "recipients": self._recipients
+            "sendingTo": [c.toJsonObj() for c in self._sendingTo],
+            "recipients": [c.toJsonObj() for c in self._recipients]
         }
         return jsonObj
 
@@ -112,9 +112,9 @@ class DeliveryMessage:
         obj: dict = cast(dict, jsonObj)
         print(obj)
         dmessage: DeliveryMessage = DeliveryMessage(
-            obj["message"],
-            obj["sendingTo"],
-            obj["recipients"]
+            Message.fromJsonObj(obj["message"]),
+            [Contact.fromJsonObj(c) for c in obj["sendingTo"]],
+            [Contact.fromJsonObj(c) for c in obj["recipients"]],
         )
         return dmessage
     

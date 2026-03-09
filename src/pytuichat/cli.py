@@ -8,7 +8,7 @@ match args[0]:
     case "send":
         inbox: Inbox = Inbox()
         contact: Contact = Contact(args[1])
-        message: Message = Message(args[2], "testing")
+        message: Message = Message(args[2], Contact("name"))
         inbox.sendMessage(contact, DeliveryMessage(message, [], [contact]))
 
     case "inbox":
