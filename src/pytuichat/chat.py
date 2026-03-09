@@ -29,9 +29,6 @@ class Chat:
         """
         Turns this instance of Contact into a json compatable object.
         """
-        # TODO currently gives an error stating:
-        # 'Message' object has no attribute '_sender'
-        # Needs to be fixed
         jsonObj: dict[str, object] = {
             "numunread": self._numUnread,
             "participants" : [p.toJsonObj() for p in self._participants],
@@ -44,8 +41,7 @@ class Chat:
         Returns a new Message from a provided json compatable object.
         """
         obj: Chat = cast(dict, jsonObj)
-        chat: Chat = Chat()
+        chat: Chat = Chat([Contact.fromJsonObj(p) for p in obj["participants"]])
         chat._numUnread = obj["numunread"]
-        chat._participants = obj["participants"]
-        chat._history = obj["history"]
+        chat._history = [Message.fromJsonObj(m) for m in obj["history"]]
         return chat

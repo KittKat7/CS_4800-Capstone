@@ -24,7 +24,7 @@ class Contact:
         jsonObj: dict[str, object] = {
             "username": self._username,
             "displayname" : self._displayname,
-            "status" : self._status,
+            "status" : self._status.value,
             "isBlocked" : self._isBlocked
         }
         return jsonObj
@@ -37,6 +37,6 @@ class Contact:
         obj: dict = cast(dict, jsonObj)
         contact: Contact = Contact(obj["username"])
         contact._displayname = obj["displayname"]
-        contact._status = obj["status"]
+        contact._status = ContactStatus(obj["status"])
         contact._isBlocked = obj["isBlocked"]
         return contact

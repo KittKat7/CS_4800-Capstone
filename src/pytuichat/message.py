@@ -30,17 +30,17 @@ class Message:
         self._sent: datetime = sent
         self._recieved: datetime = recieved
         self._sender: Contact = sender
-
+        
     def toJsonObj(self) -> object:
         """
         Turns this instance of Message into a json compatable object.
         """
         jsonObj: dict[str, object] = {
             "content": self._content,
-            "status" : self._status,
-            "sent": self._sent,
-            "received" : self._recieved,
-            "sender": self._sender
+            "status" : self._status.value,
+            "sent": str(self._sent),
+            "received" : str(self._recieved),
+            "sender": self._sender.toJsonObj()
         }
         return jsonObj
 
@@ -52,10 +52,10 @@ class Message:
         obj: dict = cast(dict, jsonObj)
         message: Message = Message(
             content=obj["content"],
-            sender=obj["sender"],
-            status=obj["status"],
-            sent=obj["sent"],
-            recieved=obj["received"])
+            sender=Contact.fromJsonObj(obj["sender"]),
+            status=MessageStatus(obj["status"]),
+            sent=datetime.strptime(obj["sent"], f'%Y-%m-%d %H:%M:%S.%f'),
+            recieved=datetime.strptime(obj["received"],  f'%Y-%m-%d %H:%M:%S.%f'))
         return message
 
 class DeliveryMessage:
@@ -117,3 +117,7 @@ class DeliveryMessage:
             obj["recipients"]
         )
         return dmessage
+    
+t = str(datetime.now())
+print(t)
+print(datetime.strptime(t, f'%Y-%m-%d %H:%M:%S.%f'))
