@@ -39,9 +39,9 @@ class Inbox:
         # TODO
         print("Message send: " + str(self._deliverMessage(contact, message)))
     
-    def isContactSendable(self, contact: Contact) -> bool:
+    def ping(self, contact: Contact) -> bool:
         """
-        Returns true if the socket for the client exists, else return false.
+        Returns true if able to ping the socket for the contact.
         """
         # Connect to the contacts server if possible
         socket_path = "/tmp/pytuichat_" + contact.getUsername()
@@ -50,6 +50,15 @@ class Inbox:
             client.connect(socket_path)
         except:
             return False
+
+        spit: SPIT = SPIT(SPIT.Type.PING, "")
+
+        # Send a message to the server
+        client.sendall(spit.toString().encode())
+
+        # Receive a response from the server
+        response = client.recv(1024)
+        print(f'Ping response: {response.decode()}')
         client.close()
         return True
 
@@ -79,12 +88,19 @@ class Inbox:
         client.sendall(spit.toString().encode())
 
         # Receive a response from the server
-        response = client.recv(1024)
-        print(f'Received response: {response.decode()}')
+        response = SPIT.fromString(client.recv(1024).decode())
+        print(f'Received response: {response.toString()}')
         # TODO handle recieved spit
+        recieved: bool = True
+        if response.data == SPIT.Status.OK:
+            print("Message sent successfully")
+            message.getMessage()._status = MessageStatus.SENT
+        else:
+            print("Message not recieved")
+            recieved = False
         # Close the connection
         client.close()
-        return True
+        return recieved
 
     def _handleConnect(self, server: socket.socket) -> None:
         """TODO"""
@@ -109,11 +125,11 @@ class Inbox:
 
                 match spit.type:
                     case SPIT.Type.PING:
-                        response = True
+                        response = SPIT.Status.OK
                     case SPIT.Type.MESSAGE:
                         dmessage: DeliveryMessage = DeliveryMessage.fromJsonObj(json.loads(spit.data))
                         self._onMessageRecieved(dmessage)
-                        response = True
+                        response = SPIT.Status.OK
                     case _:
                         raise Exception("OH NO")
 
