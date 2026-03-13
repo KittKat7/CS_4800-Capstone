@@ -110,14 +110,9 @@ class DeliveryMessage:
         Returns a new DeliveryMessage from a provided json compatable object.
         """
         obj: dict = cast(dict, jsonObj)
-        print(obj)
         dmessage: DeliveryMessage = DeliveryMessage(
             Message.fromJsonObj(obj["message"]),
             [Contact.fromJsonObj(c) for c in obj["sendingTo"]],
             [Contact.fromJsonObj(c) for c in obj["recipients"]],
         )
         return dmessage
-    
-t = str(datetime.now())
-print(t)
-print(datetime.strptime(t, f'%Y-%m-%d %H:%M:%S.%f'))
