@@ -156,3 +156,24 @@ def clearSent():
         pass
     except Exception as e:
         print("Error:\n", e, sep="")
+
+# Returns a list containing all DeliveryMessages in .unsent.json
+# Will include those that have empty sendingTo lists
+# Call clearSent() first or filter list if undesirable
+def getUnsent():
+    title = ".unsent.json"
+    _home = os.path.expanduser("~")
+    dir_path = os.environ.get("XDG_DATA_HOME") or \
+            os.path.join(_home, '.local', 'share', "pytui")
+    full_path = os.path.join(dir_path, title)
+    try:
+        with open(full_path, "r") as f:
+            dms = []
+            unsentList = json.load(f)
+            for dm in unsentList:
+                dms.append(DeliveryMessage.fromJsonObj(dm))
+            return dms
+    except FileNotFoundError:
+        print(full_path, "was not found.")
+    except Exception as e:
+        print("Error:\n", e, sep="")
