@@ -134,7 +134,6 @@ def storeMessage(dmessage):
         json.dump([dmessage.toJsonObj()], open(full_path, "w"), indent=4)
 
 # Removes all DeliveryMessages with empty sendingTo lists
-# TODO fix 'builtin_function_or_method' object is not subscriptable
 def clearSent():
     title = ".unsent.json"
     _home = os.path.expanduser("~")
@@ -143,11 +142,11 @@ def clearSent():
     full_path = os.path.join(dir_path, title)
     try:
         with open(full_path, "r") as f:
-            unsentList = [DeliveryMessage.fromJsonObj(m) for m in json.load(f)]
+            unsentList = json.load(f)
             targets = []
             for i in range(0, len(unsentList)):
-                if len(unsentList[i].getSendingTo()) < 1:
-                    targets.append[i]
+                if len(unsentList[i]["sendingTo"]) < 1:
+                    targets.append(i)
             for t in reversed(targets):
                 unsentList.pop(t)
             f.close()
