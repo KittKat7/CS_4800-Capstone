@@ -31,6 +31,15 @@ class Message:
         self._recieved: datetime = recieved
         self._sender: Contact = sender
         
+    def updateStatus(self, status):
+        self._status = status
+
+    def updateContent(self, content):
+        self._content = content
+    
+    def updateReceived(self, time):
+        self._recieved = time
+        
     def toJsonObj(self) -> object:
         """
         Turns this instance of Message into a json compatable object.
