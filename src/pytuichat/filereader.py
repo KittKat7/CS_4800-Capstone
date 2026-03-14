@@ -18,7 +18,7 @@ def makeSettings():
     os.makedirs(os.path.dirname(full_path), exist_ok = True)
     try:
         with open(full_path, 'w') as f:
-            json.dump(defaults, f)
+            json.dump(defaults, f, indent=4)
     except FileExistsError:
         print(full_path, "already exists")
     except Exception as e:
@@ -58,7 +58,7 @@ def changeSetting(setting, new):
             settings = json.load(f)
             settings[setting] = new
             f.close()
-            json.dump(settings, open(full_path, "w"))
+            json.dump(settings, open(full_path, "w"), indent=4)
             return True
     except FileNotFoundError:
         print(full_path, "was not found")
@@ -82,7 +82,7 @@ def updateChat(chat):
     full_path = os.path.join(dir_path, title)
     os.makedirs(os.path.dirname(full_path), exist_ok = True)
     with open(full_path, 'w') as f:
-        json.dump(chat.toJsonObj(), f)
+        json.dump(chat.toJsonObj(), f, indent=4)
 
 # Should remove json file representing the given Chat object
 # Will most likely be used when blocking users
@@ -102,15 +102,45 @@ def removeChat(chat):
     except Exception as e:
         print("Error:\n", e, sep="")
 
-# Should return all messages from the json for the specified chat
-# Need to do so in a format that lets the front end display them to the user
-# TODO
-def dumpChat(title):
-    pass
+# Store a DelivaryMessage that has not been received to reattempt sending later
+def storeMessage(dmessage):
+    title = ".unsent.json"
+    _home = os.path.expanduser("~")
+    dir_path = os.environ.get("XDG_DATA_HOME") or \
+            os.path.join(_home, '.local', 'share', "pytui")
+    full_path = os.path.join(dir_path, title)
+    if os.path.isfile(full_path):
+        # Add the DeliveryMessage to the .unsent file
+        with open(full_path, "r") as f:
+            unsentList = json.load(f)
+            unsentList.append(dmessage.toJsonObj())
+            f.close()
+            json.dump(unsentList, open(full_path, "w"), indent=4)
+    else:
+        # Create a new .unsent file with a list containing the DeliveryMessage
+        json.dump([dmessage.toJsonObj()], open(full_path, "w"), indent=4)
 
-# Should add the given message to the specified chat
-# If isRead, set unread messages for the specified chat to 0 in chats.json
-# If not, increment unread messages
-# New message may be None, if only want to mark chat as read
-def updateChat(title, message, isRead):
-    pass
+# Removes all DeliveryMessages with empty sendingTo lists
+# TODO fix 'builtin_function_or_method' object is not subscriptable
+def clearSent():
+    title = ".unsent.json"
+    _home = os.path.expanduser("~")
+    dir_path = os.environ.get("XDG_DATA_HOME") or \
+            os.path.join(_home, '.local', 'share', "pytui")
+    full_path = os.path.join(dir_path, title)
+    try:
+        with open(full_path, "r") as f:
+            unsentList = [DeliveryMessage.fromJsonObj(m) for m in json.load(f)]
+            targets = []
+            for i in range(0, len(unsentList)):
+                if len(unsentList[i].getSendingTo()) < 1:
+                    targets.append[i]
+            for t in reversed(targets):
+                unsentList.pop(t)
+            f.close()
+            json.dump(unsentList, open(full_path, "w"), indent=4)
+    except FileNotFoundError:
+        # If there is no .unsent, no messages to clear
+        pass
+    except Exception as e:
+        print("Error:\n", e, sep="")
