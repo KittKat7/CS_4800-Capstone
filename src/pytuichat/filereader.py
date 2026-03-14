@@ -3,52 +3,69 @@ import json
 from chat import *
 
 # Makes the necessary folder for the settings and adds the settings to it
-# TODO test this
 def makeSettings():
-    _home = os.path.expanduser('~')
-    xdg_config_home = os.environ.get('XDG_CONFIG_HOME') or \
-            os.path.join(_home, '.config')
-    
-    try:
-        # TODO finish converting this to nested directory
-        os.makedirs(os.path.join(settingsLoc, 'pytui'))
-    except FileExistsError:
-        # No need to make a new folder if it already exists
-        pass
-    except Exception as e:
-        print('Error:\n', e)
-    settingsLoc = os.path.join(settingsLoc, 'pytui')
-    # TODO remove this, it's only gonna be here for testing purposes
-    print(settingsLoc)
-    # TODO make this write the default settings to the created file
     defaults = {'show_nicknames' : 'yes',
                 'highlight_color' : 'yellow',
                 'sort_by' : 'most_recent_message',
                 'confirm_deletion' : 'yes'
                 }
-    f = open(f'{settingsLoc}/settings.json', 'w')
-    json.dump(defaults, f)
-    f.close()
+    
+    title = "settings.json"
+    _home = os.path.expanduser("~")
+    dir_path = os.environ.get("XDG_CONFIG_HOME") or \
+            os.path.join(_home, ".config","pytui")
+    full_path = os.path.join(dir_path, title)
+    os.makedirs(os.path.dirname(full_path), exist_ok = True)
+    try:
+        with open(full_path, 'w') as f:
+            json.dump(defaults, f)
+    except FileExistsError:
+        print(full_path, "already exists")
+    except Exception as e:
+        print('Error:\n', e)
 
-# Should return a string representing the current value of setting in the settings file
-# TODO test this
+# Returns a string representing the current value of setting in the settings file
+# Returns None if an error occurs
 def getSetting(setting):
-    settingsLoc = os.environ.get('XDG_CONFIG_HOME').join('/pytui/settings.json')
-    f = open(settingsLoc)
-    settings = json.load(f)
-    output = settings[setting]
-    f.close()
-    return output
+    title = "settings.json"
+    _home = os.path.expanduser("~")
+    dir_path = os.environ.get("XDG_CONFIG_HOME") or \
+            os.path.join(_home, ".config","pytui")
+    full_path = os.path.join(dir_path, title)
+    try:
+        with open(full_path, "r") as f:
+            settings = json.load(f)
+            output = settings[setting]
+            f.close()
+            return output
+    except FileNotFoundError:
+        print(full_path, "was not found")
+        return None
+    except Exception as e:
+        print("Error:\n", e, sep="")
+        return None
 
-# Should change the value of setting in the settings file
-# TODO
+# Changes the value of setting in the settings file to new
+# Returns True if the update was successful or False otherwise
 def changeSetting(setting, new):
-    settingsLoc = os.environ.get('XDG_CONFIG_HOME').join('/pytui/settings.json')
-    f = open(settingsLoc)
-    settings = json.load(f)
-    settings[setting] = new
-    json.dump(settings, settingsLoc)
-    f.close()
+    title = "settings.json"
+    _home = os.path.expanduser("~")
+    dir_path = os.environ.get("XDG_CONFIG_HOME") or \
+            os.path.join(_home, ".config","pytui")
+    full_path = os.path.join(dir_path, title)
+    try:
+        with open(full_path, "r") as f:
+            settings = json.load(f)
+            settings[setting] = new
+            f.close()
+            json.dump(settings, open(full_path, "w"))
+            return True
+    except FileNotFoundError:
+        print(full_path, "was not found")
+        return False
+    except Exception as e:
+        print("Error:\n", e, sep="")
+        return False
 
 # Create a new conversation in the pytui local data folder or update an existing one
 # The new conversation will be based on the given Chat object
