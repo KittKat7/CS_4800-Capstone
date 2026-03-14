@@ -102,6 +102,19 @@ def removeChat(chat):
     except Exception as e:
         print("Error:\n", e, sep="")
 
+# Returns Chat object represented by the json file with the given title
+# Returns None if the file is not found
+def getChat(title):
+    _home = os.path.expanduser("~")
+    dir_path = os.environ.get("XDG_DATA_HOME") or \
+            os.path.join(_home, '.local', 'share', "pytui")
+    full_path = os.path.join(dir_path, title)
+    try:
+        with open(full_path, "r") as f:
+            return Chat.fromJsonObj(json.load(f))
+    except FileNotFoundError:
+        return None
+
 # Store a DelivaryMessage that has not been received to reattempt sending later
 def storeMessage(dmessage):
     title = ".unsent.json"
