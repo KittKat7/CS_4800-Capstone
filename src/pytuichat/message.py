@@ -36,6 +36,12 @@ class Message:
 
     def updateContent(self, content):
         self._content = content
+
+    def getContent(self) -> str:
+        """
+        Returns the content of the message.
+        """
+        return self._content
     
     def updateReceived(self, time):
         self._recieved = time
