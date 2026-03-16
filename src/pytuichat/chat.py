@@ -4,9 +4,9 @@ from contact import *
 from typing import cast
 
 class Chat:
-    def __init__(self, contacts):
+    def __init__(self, contacts: list[str]):
         self._numUnread: int = 0
-        self._participants: list[Contact] = contacts
+        self._participants: list[str] = contacts
         self._history: list[Message] = []
     
     def updateMessageHistory(self, Message) -> None:
@@ -25,13 +25,13 @@ class Chat:
         # TODO
         return self._history
 
-    def toJsonObj(self):
+    def toJsonObj(self) -> dict:
         """
         Turns this instance of Contact into a json compatable object.
         """
         jsonObj: dict[str, object] = {
             "numunread": self._numUnread,
-            "participants" : [p.toJsonObj() for p in self._participants],
+            "participants" : self._participants,
             "history" : [m.toJsonObj() for m in self._history]
         }
         return jsonObj
@@ -42,7 +42,7 @@ class Chat:
         Returns a new Message from a provided json compatable object.
         """
         obj: dict = cast(dict, jsonObj)
-        chat: Chat = Chat([Contact.fromJsonObj(p) for p in obj["participants"]])
+        chat: Chat = Chat(obj["participants"])
         chat._numUnread = obj["numunread"]
         chat._history = [Message.fromJsonObj(m) for m in obj["history"]]
         return chat

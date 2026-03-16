@@ -13,7 +13,7 @@ match args[0]:
     case "send":
         inbox: Inbox = Inbox()
         contact: Contact = Contact(args[1])
-        message: Message = Message(args[2], Contact("name"))
+        message: Message = Message(args[2], "name")
         inbox.sendMessage(contact, DeliveryMessage(message, [], [contact]))
 
     case "inbox":
@@ -34,13 +34,8 @@ match args[0]:
 
     case "store":
         # Currently only stores premade messages for demonstration purposes
-        con = Contact('bob1235')
-        con2 = Contact('jerrythesnail')
-        con._displayname = 'bob'
-        con._isBlocked = False
-        con2._isBlocked = False
-        con._status = ContactStatus(2)
-        con2._status = ContactStatus(1)
+        con = 'bob1235'
+        con2 = 'jerrythesnail'
         match args[1]:
             case "1":
                 mes = Message("hi", con)
@@ -79,13 +74,8 @@ match args[0]:
 
     case "update":
         # Same demonstration messages as unsent storage
-        con = Contact('bob1235')
-        con2 = Contact('jerrythesnail')
-        con._displayname = 'bob'
-        con._isBlocked = False
-        con2._isBlocked = False
-        con._status = ContactStatus(2)
-        con2._status = ContactStatus(1)
+        con = 'bob1235'
+        con2 = 'jerrythesnail'
         ch = Chat([con, con2])
         his = []
         unr = 0
@@ -115,24 +105,14 @@ match args[0]:
         FileReader.updateChat(ch)
 
     case "remove":
-        con = Contact('bob1235')
-        con2 = Contact('jerrythesnail')
-        con._displayname = 'bob'
-        con._isBlocked = False
-        con2._isBlocked = False
-        con._status = ContactStatus(2)
-        con2._status = ContactStatus(1)
+        con = 'bob1235'
+        con2 = 'jerrythesnail'
         ch = Chat([con, con2])
         FileReader.removeChat(ch)
 
     case "get":
-        con = Contact('bob1235')
-        con2 = Contact('jerrythesnail')
-        con._displayname = 'bob'
-        con._isBlocked = False
-        con2._isBlocked = False
-        con._status = ContactStatus(2)
-        con2._status = ContactStatus(1)
+        con = 'bob1235'
+        con2 = 'jerrythesnail'
         ch = Chat([con, con2])
         his = FileReader.getChat('bob1235jerrythesnail.json')
         if his == None:

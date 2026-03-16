@@ -16,7 +16,7 @@ class Inbox:
     def getChats(self) -> list[Chat]:
         return self._chats
 
-    def _findOrCreateChat(self, contacts: list[Contact]) -> Chat:
+    def _findOrCreateChat(self, contacts: list[str]) -> Chat:
         """
         Find a specific chat. If the chat does not exist, create and return it.
         """

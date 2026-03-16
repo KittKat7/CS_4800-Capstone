@@ -79,7 +79,7 @@ class FileReader:
         # This will do for now, though
         title = ""
         for user in chat._participants:
-            title += user.getUsername()
+            title += user
         title += ".json"
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_DATA_HOME") or \
@@ -95,7 +95,7 @@ class FileReader:
     def removeChat(chat : Chat):
         title = ""
         for user in chat._participants:
-            title += user.getUsername()
+            title += user
         title += ".json"
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_DATA_HOME") or \

@@ -21,7 +21,7 @@ class Message:
     def __init__(
     self,
     content: str,
-    sender: Contact,
+    sender: str,
     status: MessageStatus = MessageStatus.UNREAD,
     sent: datetime = datetime.now(),
     recieved: datetime = datetime.now()):
@@ -29,7 +29,7 @@ class Message:
         self._status: MessageStatus = status
         self._sent: datetime = sent
         self._recieved: datetime = recieved
-        self._sender: Contact = sender
+        self._sender: str = sender
         
     def updateStatus(self, status):
         self._status = status
@@ -49,7 +49,7 @@ class Message:
             "status" : self._status.value,
             "sent": str(self._sent),
             "received" : str(self._recieved),
-            "sender": self._sender.toJsonObj()
+            "sender": self._sender
         }
         return jsonObj
 
@@ -61,7 +61,7 @@ class Message:
         obj: dict = cast(dict, jsonObj)
         message: Message = Message(
             content=obj["content"],
-            sender=Contact.fromJsonObj(obj["sender"]),
+            sender=obj["sender"],
             status=MessageStatus(obj["status"]),
             sent=datetime.strptime(obj["sent"], f'%Y-%m-%d %H:%M:%S.%f'),
             recieved=datetime.strptime(obj["received"],  f'%Y-%m-%d %H:%M:%S.%f'))
@@ -81,8 +81,8 @@ class DeliveryMessage:
         Constructor
         """
         self._message: Message = message
-        self._sendingTo: list[Contact] = sendingTo
-        self._recipients: list[Contact] = recipients
+        self._sendingTo: list[str] = sendingTo
+        self._recipients: list[str] = recipients
 
     def getMessage(self) -> Message:
         """
@@ -90,26 +90,26 @@ class DeliveryMessage:
         """
         return self._message
     
-    def getSendingTo(self) -> list[Contact]:
+    def getSendingTo(self) -> list[str]:
         """
         Returns a list of who still needs the message
         """
         return self._sendingTo
 
-    def getRecipients(self) -> list[Contact]:
+    def getRecipients(self) -> list[str]:
         """
         Returns the designated recipients of the message
         """
         return self._recipients
 
-    def toJsonObj(self) -> object:
+    def toJsonObj(self) -> dict:
         """
         Turns this instance of DeliveryMessage into a json compatable object.
         """
         jsonObj: dict[str, object] = {
             "message": self._message.toJsonObj(),
-            "sendingTo": [c.toJsonObj() for c in self._sendingTo],
-            "recipients": [c.toJsonObj() for c in self._recipients]
+            "sendingTo": self._sendingTo,
+            "recipients": self._recipients
         }
         return jsonObj
 
@@ -121,7 +121,7 @@ class DeliveryMessage:
         obj: dict = cast(dict, jsonObj)
         dmessage: DeliveryMessage = DeliveryMessage(
             Message.fromJsonObj(obj["message"]),
-            [Contact.fromJsonObj(c) for c in obj["sendingTo"]],
-            [Contact.fromJsonObj(c) for c in obj["recipients"]],
+            obj["sendingTo"],
+            obj["recipients"],
         )
         return dmessage
