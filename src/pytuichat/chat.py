@@ -9,6 +9,12 @@ class Chat:
         self._participants: list[str] = contacts
         self._history: list[Message] = []
     
+    def getParticipants(self) -> list[str]:
+        """
+        Get the list of users participating in this Chat
+        """
+        return self._participants
+    
     def updateMessageHistory(self, Message) -> None:
         """
         Adds a new message to message history and increases the number of unread

@@ -86,7 +86,7 @@ class FileReader:
         # Might be best to come up with a more concise title convention
         # This will do for now, though
         title = ""
-        for user in chat._participants:
+        for user in chat.getParticipants():
             title += user
         title += ".json"
         _home = os.path.expanduser("~")
@@ -104,7 +104,7 @@ class FileReader:
         data folder. Does nothing if the JSON file does not exist.
         """
         title = ""
-        for user in chat._participants:
+        for user in chat.getParticipants():
             title += user
         title += ".json"
         _home = os.path.expanduser("~")
