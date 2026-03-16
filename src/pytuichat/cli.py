@@ -134,4 +134,8 @@ match args[0]:
         con._status = ContactStatus(2)
         con2._status = ContactStatus(1)
         ch = Chat([con, con2])
-        print(FileReader.getChat(ch).toJsonObj())
+        his = FileReader.getChat(ch).toJsonObj()
+        if his == None:
+            print("Chat not found")
+        else:
+            print(his.toJsonObj())
