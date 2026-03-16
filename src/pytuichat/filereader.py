@@ -4,6 +4,7 @@ from chat import *
 
 class FileReader:
     # Makes the necessary folder for the settings and adds the settings to it
+    @staticmethod
     def makeSettings():
         defaults = {'show_nicknames' : 'yes',
                     'highlight_color' : 'yellow',
@@ -26,8 +27,9 @@ class FileReader:
             print('Error:\n', e)
 
     # Returns a string representing the current value of setting in the settings file
-    # Returns None if an error occurs
-    def getSetting(setting):
+    # Returns "" if an error occurs
+    @staticmethod
+    def getSetting(setting : str) -> str:
         title = "settings.json"
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_CONFIG_HOME") or \
@@ -41,14 +43,15 @@ class FileReader:
                 return output
         except FileNotFoundError:
             print(full_path, "was not found")
-            return None
+            return ""
         except Exception as e:
             print("Error:\n", e, sep="")
-            return None
+            return ""
 
     # Changes the value of setting in the settings file to new
     # Returns True if the update was successful or False otherwise
-    def changeSetting(setting, new):
+    @staticmethod
+    def changeSetting(setting : str, new : str) -> bool:
         title = "settings.json"
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_CONFIG_HOME") or \
@@ -70,7 +73,8 @@ class FileReader:
 
     # Create a new conversation in the pytui local data folder or update an existing one
     # The new conversation will be based on the given Chat object
-    def updateChat(chat):
+    @staticmethod
+    def updateChat(chat : Chat):
         # Might be best to come up with a more concise title convention
         # This will do for now, though
         title = ""
@@ -87,7 +91,8 @@ class FileReader:
 
     # Should remove json file representing the given Chat object
     # Will most likely be used when blocking users
-    def removeChat(chat):
+    @staticmethod
+    def removeChat(chat : Chat):
         title = ""
         for user in chat._participants:
             title += user.getUsername()
@@ -105,7 +110,9 @@ class FileReader:
 
     # Returns Chat object represented by the json file with the given title
     # Returns None if the file is not found
-    def getChat(title):
+    # TODO need a way to actually get the titles
+    @staticmethod
+    def getChat(title : str) -> Chat:
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_DATA_HOME") or \
                 os.path.join(_home, '.local', 'share', "pytui")
@@ -114,10 +121,11 @@ class FileReader:
             with open(full_path, "r") as f:
                 return Chat.fromJsonObj(json.load(f))
         except FileNotFoundError:
-            return None
+            raise Exception(f"The file {full_path} was not found")
 
     # Store a DelivaryMessage that has not been received to reattempt sending later
-    def storeMessage(dmessage):
+    @staticmethod
+    def storeMessage(dmessage : DeliveryMessage):
         title = ".unsent.json"
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_DATA_HOME") or \
@@ -135,6 +143,7 @@ class FileReader:
             json.dump([dmessage.toJsonObj()], open(full_path, "w"), indent=4)
 
     # Removes all DeliveryMessages with empty sendingTo lists
+    @staticmethod
     def clearSent():
         title = ".unsent.json"
         _home = os.path.expanduser("~")
@@ -161,7 +170,8 @@ class FileReader:
     # Returns a list containing all DeliveryMessages in .unsent.json
     # Will include those that have empty sendingTo lists
     # Call clearSent() first or filter list if undesirable
-    def getUnsent():
+    @staticmethod
+    def getUnsent() -> list[DeliveryMessage]:
         title = ".unsent.json"
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_DATA_HOME") or \
@@ -175,6 +185,4 @@ class FileReader:
                     dms.append(DeliveryMessage.fromJsonObj(dm))
                 return dms
         except FileNotFoundError:
-            print(full_path, "was not found.")
-        except Exception as e:
-            print("Error:\n", e, sep="")
+            return []

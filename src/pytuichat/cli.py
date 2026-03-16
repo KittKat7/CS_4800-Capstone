@@ -55,14 +55,14 @@ match args[0]:
                 mes._sent = datetime.now()
                 mes._recieved = datetime.now()
                 dm = DeliveryMessage(mes, [con], [con, con2])
-                FileReader.storeMessage(mes)
+                FileReader.storeMessage(dm)
             case "3":
                 mes = Message("bye", con)
                 mes._status = MessageStatus(1)
                 mes._sent = datetime.now()
                 mes._recieved = datetime.now()
                 dm = DeliveryMessage(mes, [con, con2], [con, con2])
-                FileReader.storeMessage(mes)
+                FileReader.storeMessage(dm)
     
     case "clear":
         # First demo message above will be cleared here
@@ -134,7 +134,7 @@ match args[0]:
         con._status = ContactStatus(2)
         con2._status = ContactStatus(1)
         ch = Chat([con, con2])
-        his = FileReader.getChat(ch).toJsonObj()
+        his = FileReader.getChat('bob1235jerrythesnail.json')
         if his == None:
             print("Chat not found")
         else:

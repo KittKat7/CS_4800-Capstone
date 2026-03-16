@@ -36,11 +36,12 @@ class Chat:
         }
         return jsonObj
 
+    @staticmethod
     def fromJsonObj(jsonObj: object) -> 'Chat':
         """
         Returns a new Message from a provided json compatable object.
         """
-        obj: Chat = cast(dict, jsonObj)
+        obj: dict = cast(dict, jsonObj)
         chat: Chat = Chat([Contact.fromJsonObj(p) for p in obj["participants"]])
         chat._numUnread = obj["numunread"]
         chat._history = [Message.fromJsonObj(m) for m in obj["history"]]
