@@ -1,7 +1,8 @@
 import unittest
 
 class TestMessageIO(unittest.TestCase):
-    def testStartInbox():
+    @staticmethod
+    def testStartInbox() -> None:
         """
         """
 

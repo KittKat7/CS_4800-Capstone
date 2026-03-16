@@ -119,3 +119,6 @@ match args[0]:
             print("Chat not found")
         else:
             print(his.toJsonObj())
+
+    case _:
+        pass

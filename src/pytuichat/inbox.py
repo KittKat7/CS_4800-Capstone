@@ -21,10 +21,10 @@ class Inbox:
         Find a specific chat. If the chat does not exist, create and return it.
         """
         for ch in self._chats:
-            if len(ch._participants) == len(contacts):
+            if len(ch.getParticipants()) == len(contacts):
                 isMatch: bool = True
                 for c in contacts:
-                    if c not in ch._participants:
+                    if c not in ch.getParticipants():
                         isMatch = False
                 if isMatch:
                     return ch
@@ -94,7 +94,7 @@ class Inbox:
         recieved: bool = True
         if response.data == SPIT.Status.OK:
             print("Message sent successfully")
-            message.getMessage()._status = MessageStatus.SENT
+            message.getMessage().updateStatus(MessageStatus.SENT)
         else:
             print("Message not recieved")
             recieved = False
@@ -105,7 +105,7 @@ class Inbox:
     def _handleConnect(self, server: socket.socket) -> None:
         """TODO"""
         # TODO
-        connection, address = server.accept()
+        connection = server.accept()[1]
 
         try:
             print('Connection from', str(connection))
@@ -127,7 +127,7 @@ class Inbox:
                     case SPIT.Type.PING:
                         response = SPIT.Status.OK
                     case SPIT.Type.MESSAGE:
-                        dmessage: DeliveryMessage = DeliveryMessage.fromJsonObj(json.loads(spit.data))
+                        dmessage: DeliveryMessage = DeliveryMessage.fromJsonObj(spit.data)
                         self._onMessageRecieved(dmessage)
                         response = SPIT.Status.OK
                     case _:
@@ -146,8 +146,8 @@ class Inbox:
         message to the relevent chat.
         """
         # TODO
-        print("Recieved message: " + str(dmessage._message._content))
-        c: Chat = self._findOrCreateChat(dmessage._recipients)
+        print("Recieved message: " + str(dmessage.getMessage().getContent()))
+        c: Chat = self._findOrCreateChat(dmessage.getRecipients())
         c.updateMessageHistory(dmessage.getMessage)
 
     @staticmethod

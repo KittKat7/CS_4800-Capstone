@@ -1,6 +1,6 @@
 from enum import Enum
 import json
-from typing import Any
+from typing import Any, cast
 
 class SPIT:
     """
@@ -24,7 +24,7 @@ class SPIT:
         NOTFOUND = 404
         ERROR = 500
     
-    def __init__(self, type: Type, data):
+    def __init__(self, type: Type, data: object):
         """
         Constructor
         """
@@ -37,7 +37,8 @@ class SPIT:
         """
         return json.dumps({
             "type": self.type.value,
-            "data": self.data.value if self.type == SPIT.Type.STATUS else self.data
+            "data": cast(SPIT.Status, self.data).value
+                if self.type == SPIT.Type.STATUS else self.data
         })
 
     @staticmethod

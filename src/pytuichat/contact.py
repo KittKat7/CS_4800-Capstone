@@ -12,6 +12,7 @@ class Contact:
         self._username: str = username
         self._displayname: str = ""
         self._status: ContactStatus = ContactStatus.ONLINE
+        # TODO _isBlocked is repetative as their status can be blocked
         self._isBlocked: bool = False
     
     def getUsername(self) -> str:
@@ -34,9 +35,9 @@ class Contact:
         """
         Returns a new Message from a provided json compatable object.
         """
-        obj: dict = cast(dict, jsonObj)
-        contact: Contact = Contact(obj["username"])
-        contact._displayname = obj["displayname"]
+        obj: dict[str, object] = cast(dict[str, object], jsonObj)
+        contact: Contact = Contact(cast(str, obj["username"]))
+        contact._displayname = cast(str, obj["displayname"])
         contact._status = ContactStatus(obj["status"])
-        contact._isBlocked = obj["isBlocked"]
+        contact._isBlocked = cast(bool, obj["isBlocked"])
         return contact
