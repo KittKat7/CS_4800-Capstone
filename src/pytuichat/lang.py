@@ -1,11 +1,12 @@
+from types import ModuleType
 import langs.en_us as en_us
 
 class LangMap:
     """
     Holds a map of the available languages and the current language being used.
     """
-    langMap: dict
-    availableLangs: dict = {
+    langMap: dict[str, str]|None = None
+    availableLangs: dict[str, ModuleType] = {
         "en_us": en_us,
     }
 

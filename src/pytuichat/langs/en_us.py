@@ -1,4 +1,4 @@
 
-language: dict = {
+language: dict[str, str] = {
     "test": "testing",
 }
