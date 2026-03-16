@@ -3,9 +3,11 @@ import json
 from chat import *
 
 class FileReader:
-    # Makes the necessary folder for the settings and adds the settings to it
     @staticmethod
     def makeSettings():
+        """
+        Makes the necessary folder for the settings and adds the settings to it.
+        """
         defaults = {'show_nicknames' : 'yes',
                     'highlight_color' : 'yellow',
                     'sort_by' : 'most_recent_message',
@@ -26,10 +28,12 @@ class FileReader:
         except Exception as e:
             print('Error:\n', e)
 
-    # Returns a string representing the current value of setting in the settings file
-    # Returns "" if an error occurs
     @staticmethod
     def getSetting(setting : str) -> str:
+        """
+        Returns a string representing the current value of setting in the
+        settings file, or "" if an error occurs.
+        """
         title = "settings.json"
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_CONFIG_HOME") or \
@@ -48,10 +52,12 @@ class FileReader:
             print("Error:\n", e, sep="")
             return ""
 
-    # Changes the value of setting in the settings file to new
-    # Returns True if the update was successful or False otherwise
     @staticmethod
     def changeSetting(setting : str, new : str) -> bool:
+        """
+        Changes the value of setting in the settings file to new.
+        Returns True if the update was successful or False if an error occured.
+        """
         title = "settings.json"
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_CONFIG_HOME") or \
@@ -71,10 +77,12 @@ class FileReader:
             print("Error:\n", e, sep="")
             return False
 
-    # Create a new conversation in the pytui local data folder or update an existing one
-    # The new conversation will be based on the given Chat object
     @staticmethod
     def updateChat(chat : Chat):
+        """
+        Create a new JSON file in the pytui local data folder or update an
+        existing one. The file will be a JSON representation of the given Chat.
+        """
         # Might be best to come up with a more concise title convention
         # This will do for now, though
         title = ""
@@ -89,10 +97,12 @@ class FileReader:
         with open(full_path, 'w') as f:
             json.dump(chat.toJsonObj(), f, indent=4)
 
-    # Should remove json file representing the given Chat object
-    # Will most likely be used when blocking users
     @staticmethod
     def removeChat(chat : Chat):
+        """
+        Removes the JSON file representing the given Chat from the pytui local
+        data folder. Does nothing if the JSON file does not exist.
+        """
         title = ""
         for user in chat._participants:
             title += user.getUsername()
@@ -105,14 +115,13 @@ class FileReader:
             os.remove(full_path)
         except FileNotFoundError:
             print(full_path, "was not found")
-        except Exception as e:
-            print("Error:\n", e, sep="")
 
-    # Returns Chat object represented by the json file with the given title
-    # Returns None if the file is not found
-    # TODO need a way to actually get the titles
     @staticmethod
     def getChat(title : str) -> Chat:
+        """
+        Returns Chat object represented by the json file with the given title.
+        TODO need a way to actually get the titles
+        # """
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_DATA_HOME") or \
                 os.path.join(_home, '.local', 'share', "pytui")
@@ -123,9 +132,12 @@ class FileReader:
         except FileNotFoundError:
             raise Exception(f"The file {full_path} was not found")
 
-    # Store a DelivaryMessage that has not been received to reattempt sending later
     @staticmethod
     def storeMessage(dmessage : DeliveryMessage):
+        """
+        Store a DelivaryMessage that has not been received to reattempt sending 
+        at a later time.
+        """
         title = ".unsent.json"
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_DATA_HOME") or \
@@ -142,9 +154,11 @@ class FileReader:
             # Create a new .unsent file with a list containing the DeliveryMessage
             json.dump([dmessage.toJsonObj()], open(full_path, "w"), indent=4)
 
-    # Removes all DeliveryMessages with empty sendingTo lists
     @staticmethod
     def clearSent():
+        """
+        Removes all DeliveryMessages with empty sendingTo lists.
+        """
         title = ".unsent.json"
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_DATA_HOME") or \
@@ -167,11 +181,13 @@ class FileReader:
         except Exception as e:
             print("Error:\n", e, sep="")
 
-    # Returns a list containing all DeliveryMessages in .unsent.json
-    # Will include those that have empty sendingTo lists
-    # Call clearSent() first or filter list if undesirable
     @staticmethod
     def getUnsent() -> list[DeliveryMessage]:
+        """
+        Returns a list containing all DeliveryMessages in .unsent.json. Will
+        include those that have empty sendingTo lists. Call clearSent() first or
+        filter the output list if this behavior is undesirable.
+        """
         title = ".unsent.json"
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_DATA_HOME") or \
