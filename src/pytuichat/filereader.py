@@ -167,7 +167,7 @@ class FileReader:
         try:
             with open(full_path, "r") as f:
                 unsentList = json.load(f)
-                targets = []
+                targets: list[int] = []
                 for i in range(0, len(unsentList)):
                     if len(unsentList[i]["sendingTo"]) < 1:
                         targets.append(i)
@@ -195,7 +195,7 @@ class FileReader:
         full_path = os.path.join(dir_path, title)
         try:
             with open(full_path, "r") as f:
-                dms = []
+                dms: list[DeliveryMessage] = []
                 unsentList = json.load(f)
                 for dm in unsentList:
                     dms.append(DeliveryMessage.fromJsonObj(dm))

@@ -31,19 +31,13 @@ class Message:
         self._recieved: datetime = recieved
         self._sender: str = sender
         
-    def updateStatus(self, status):
+    def updateStatus(self, status: MessageStatus):
         self._status = status
 
-    def updateContent(self, content):
+    def updateContent(self, content: str):
         self._content = content
-
-    def getContent(self) -> str:
-        """
-        Returns the content of the message.
-        """
-        return self._content
     
-    def updateReceived(self, time):
+    def updateReceived(self, time: datetime):
         self._recieved = time
         
     def toJsonObj(self) -> object:
@@ -64,13 +58,15 @@ class Message:
         """
         Returns a new Message from a provided json compatable object.
         """
-        obj: dict = cast(dict, jsonObj)
+        obj: dict[str, object] = cast(dict[str, object], jsonObj)
         message: Message = Message(
-            content=obj["content"],
-            sender=obj["sender"],
-            status=MessageStatus(obj["status"]),
-            sent=datetime.strptime(obj["sent"], f'%Y-%m-%d %H:%M:%S.%f'),
-            recieved=datetime.strptime(obj["received"],  f'%Y-%m-%d %H:%M:%S.%f'))
+            content = str(obj["content"]),
+            sender = str(obj["sender"]),
+            status = MessageStatus(obj["status"]),
+            sent = datetime.strptime(str(obj["sent"]), 
+                                     f'%Y-%m-%d %H:%M:%S.%f'),
+            recieved = datetime.strptime(str(obj["received"]),  
+                                         f'%Y-%m-%d %H:%M:%S.%f'))
         return message
 
 class DeliveryMessage:
@@ -82,7 +78,8 @@ class DeliveryMessage:
     recieved it, they are removed from the list. This list is also not passed to
     the recipient.
     """
-    def __init__(self, message, sendingTo, recipients):
+    def __init__(self, message: Message, sendingTo: list[str], 
+                 recipients: list[str]):
         """
         Constructor
         """
@@ -108,7 +105,7 @@ class DeliveryMessage:
         """
         return self._recipients
 
-    def toJsonObj(self) -> dict:
+    def toJsonObj(self) -> dict[str, object]:
         """
         Turns this instance of DeliveryMessage into a json compatable object.
         """
@@ -124,10 +121,10 @@ class DeliveryMessage:
         """
         Returns a new DeliveryMessage from a provided json compatable object.
         """
-        obj: dict = cast(dict, jsonObj)
+        obj: dict[str, object] = cast(dict[str, object], jsonObj)
         dmessage: DeliveryMessage = DeliveryMessage(
-            Message.fromJsonObj(obj["message"]),
-            obj["sendingTo"],
-            obj["recipients"],
+            message = Message.fromJsonObj(obj["message"]),
+            sendingTo = cast(list[str], obj["sendingTo"]),
+            recipients = cast(list[str], obj["recipients"]),
         )
         return dmessage

@@ -15,12 +15,12 @@ class Chat:
         """
         return self._participants
     
-    def updateMessageHistory(self, Message) -> None:
+    def updateMessageHistory(self, message: Message) -> None:
         """
         Adds a new message to message history and increases the number of unread
         messages.
         """
-        self._history = [Message] + self._history
+        self._history = [message] + self._history
         self._numUnread += 1
         print("Update persist messages")
         # TODO save persistant
@@ -31,7 +31,7 @@ class Chat:
         # TODO
         return self._history
 
-    def toJsonObj(self) -> dict:
+    def toJsonObj(self) -> dict[str, object]:
         """
         Turns this instance of Contact into a json compatable object.
         """
@@ -47,8 +47,9 @@ class Chat:
         """
         Returns a new Message from a provided json compatable object.
         """
-        obj: dict = cast(dict, jsonObj)
-        chat: Chat = Chat(obj["participants"])
-        chat._numUnread = obj["numunread"]
-        chat._history = [Message.fromJsonObj(m) for m in obj["history"]]
+        obj: dict[str, object] = cast(dict[str, object], jsonObj)
+        chat: Chat = Chat(cast(list[str], obj["participants"]))
+        chat._numUnread = cast(int, obj["numunread"])
+        chat._history = [Message.fromJsonObj(m) for m in 
+                         cast(list[Message], obj["history"])]
         return chat
