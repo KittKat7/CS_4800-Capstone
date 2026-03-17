@@ -148,7 +148,7 @@ class Inbox:
         # TODO
         print("Recieved message: " + str(dmessage.getMessage().getContent()))
         c: Chat = self._findOrCreateChat(dmessage.getRecipients())
-        c.updateMessageHistory(dmessage.getMessage)
+        c.updateMessageHistory(dmessage.getMessage())
 
     @staticmethod
     def runInbox() -> None:
