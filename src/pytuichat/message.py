@@ -39,6 +39,15 @@ class Message:
     
     def updateReceived(self, time: datetime):
         self._recieved = time
+    
+    def updateSent(self, sent: datetime):
+        self._sent = sent
+    
+    def getContent(self) -> str:
+        """
+        Returns this Message's content
+        """
+        return self._content
         
     def toJsonObj(self) -> object:
         """

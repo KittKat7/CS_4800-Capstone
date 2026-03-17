@@ -14,7 +14,7 @@ match args[0]:
         inbox: Inbox = Inbox()
         contact: Contact = Contact(args[1])
         message: Message = Message(args[2], "name")
-        inbox.sendMessage(contact, DeliveryMessage(message, [], [contact]))
+        inbox.sendMessage(contact, DeliveryMessage(message, [], [args[1]]))
 
     case "inbox":
         Inbox.runInbox()
@@ -39,25 +39,27 @@ match args[0]:
         match args[1]:
             case "1":
                 mes = Message("hi", con)
-                mes._status = MessageStatus(5)
-                mes._sent = datetime.now()
-                mes._recieved = datetime.now()
+                mes.updateStatus(MessageStatus(5))
+                mes.updateSent(datetime.now())
+                mes.updateReceived(datetime.now())
                 dm = DeliveryMessage(mes, [], [con, con2])
                 FileReader.storeMessage(dm)
             case "2":
                 mes = Message("okay then", con)
-                mes._status = MessageStatus(2)
-                mes._sent = datetime.now()
-                mes._recieved = datetime.now()
+                mes.updateStatus(MessageStatus(2))
+                mes.updateSent(datetime.now())
+                mes.updateReceived(datetime.now())
                 dm = DeliveryMessage(mes, [con], [con, con2])
                 FileReader.storeMessage(dm)
             case "3":
                 mes = Message("bye", con)
-                mes._status = MessageStatus(1)
-                mes._sent = datetime.now()
-                mes._recieved = datetime.now()
+                mes.updateStatus(MessageStatus(1))
+                mes.updateSent(datetime.now())
+                mes.updateReceived(datetime.now())
                 dm = DeliveryMessage(mes, [con, con2], [con, con2])
                 FileReader.storeMessage(dm)
+            case _:
+                pass
     
     case "clear":
         # First demo message above will be cleared here
@@ -77,31 +79,31 @@ match args[0]:
         con = 'bob1235'
         con2 = 'jerrythesnail'
         ch = Chat([con, con2])
-        his = []
+        his: list[Message] = []
         unr = 0
         if len(args) > 1 and args[1] == "1":
             mes1 = Message('hi', con)
-            mes1._status = MessageStatus(5)
-            mes1._sent = datetime.now()
-            mes1._recieved = datetime.now()
+            mes1.updateStatus(MessageStatus(5))
+            mes1.updateSent(datetime.now())
+            mes1.updateReceived(datetime.now())
             his.append(mes1)
             unr += 1
         if len(args) > 2 and args[2] == "1":
             mes2 = Message('okay then', con)
-            mes2._status = MessageStatus(2)
-            mes2._sent = datetime.now()
-            mes2._recieved = datetime.now()
+            mes2.updateStatus(MessageStatus(2))
+            mes2.updateSent(datetime.now())
+            mes2.updateReceived(datetime.now())
             his.append(mes2)
             unr += 1
         if len(args) > 3 and args[3] == "1":
             mes3 = Message('goodbye', con)
-            mes3._status = MessageStatus(1)
-            mes3._sent = datetime.now()
-            mes3._recieved = datetime.now()
+            mes3.updateStatus(MessageStatus(1))
+            mes3.updateSent(datetime.now())
+            mes3.updateReceived(datetime.now())
             his.append(mes3)
             unr += 1
-        ch._history = his
-        ch._numUnread = unr
+        for m in his:
+            ch.updateMessageHistory(m)
         FileReader.updateChat(ch)
 
     case "remove":
@@ -113,12 +115,8 @@ match args[0]:
     case "get":
         con = 'bob1235'
         con2 = 'jerrythesnail'
-        ch = Chat([con, con2])
-        his = FileReader.getChat('bob1235jerrythesnail.json')
-        if his == None:
-            print("Chat not found")
-        else:
-            print(his.toJsonObj())
+        ch = FileReader.getChat('bob1235jerrythesnail.json')
+        print(ch.toJsonObj())
 
     case _:
         pass
