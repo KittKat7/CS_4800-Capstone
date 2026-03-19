@@ -88,13 +88,13 @@ class DeliveryMessage:
     the recipient.
     """
     def __init__(self, message: Message, sendingTo: list[str], 
-                 recipients: list[str]):
+                 chatID: str):
         """
         Constructor
         """
         self._message: Message = message
         self._sendingTo: list[str] = sendingTo
-        self._recipients: list[str] = recipients
+        self._chatID: str = chatID
 
     def getMessage(self) -> Message:
         """
@@ -108,11 +108,11 @@ class DeliveryMessage:
         """
         return self._sendingTo
 
-    def getRecipients(self) -> list[str]:
+    def getChatID(self) -> str:
         """
         Returns the designated recipients of the message
         """
-        return self._recipients
+        return self._chatID
 
     def toJsonObj(self) -> dict[str, object]:
         """
@@ -121,7 +121,7 @@ class DeliveryMessage:
         jsonObj: dict[str, object] = {
             "message": self._message.toJsonObj(),
             "sendingTo": self._sendingTo,
-            "recipients": self._recipients
+            "recipients": self._chatID
         }
         return jsonObj
 
@@ -134,6 +134,6 @@ class DeliveryMessage:
         dmessage: DeliveryMessage = DeliveryMessage(
             message = Message.fromJsonObj(obj["message"]),
             sendingTo = cast(list[str], obj["sendingTo"]),
-            recipients = cast(list[str], obj["recipients"]),
+            chatID = cast(str, obj["chatID"]),
         )
         return dmessage

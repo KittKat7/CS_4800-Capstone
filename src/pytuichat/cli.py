@@ -14,7 +14,7 @@ match args[0]:
         inbox: Inbox = Inbox()
         contact: Contact = Contact(args[1])
         message: Message = Message(args[2], "name")
-        inbox.sendMessage(contact, DeliveryMessage(message, [], [args[1]]))
+        inbox.sendMessage(contact, DeliveryMessage(message, [], "TESTING-CHAT"))
 
     case "inbox":
         Inbox.runInbox()
@@ -42,21 +42,21 @@ match args[0]:
                 mes.updateStatus(MessageStatus(5))
                 mes.updateSent(datetime.now())
                 mes.updateReceived(datetime.now())
-                dm = DeliveryMessage(mes, [], [con, con2])
+                dm = DeliveryMessage(mes, [], con + con2)
                 FileReader.storeMessage(dm)
             case "2":
                 mes = Message("okay then", con)
                 mes.updateStatus(MessageStatus(2))
                 mes.updateSent(datetime.now())
                 mes.updateReceived(datetime.now())
-                dm = DeliveryMessage(mes, [con], [con, con2])
+                dm = DeliveryMessage(mes, [con], con + con2)
                 FileReader.storeMessage(dm)
             case "3":
                 mes = Message("bye", con)
                 mes.updateStatus(MessageStatus(1))
                 mes.updateSent(datetime.now())
                 mes.updateReceived(datetime.now())
-                dm = DeliveryMessage(mes, [con, con2], [con, con2])
+                dm = DeliveryMessage(mes, [con, con2], con + con2)
                 FileReader.storeMessage(dm)
             case _:
                 pass
