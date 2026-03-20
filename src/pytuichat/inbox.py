@@ -10,34 +10,47 @@ from spit import *
 
 class Inbox:
     def __init__(self):
-        self._contacts: list[str] = []
+        self._contacts: list[Contact] = []
         self._chats: list[Chat] = []
+        self._outbox: list[DeliveryMessage] = FileReader.getUnsent()
 
     def getChats(self) -> list[Chat]:
         return self._chats
 
-    def _findOrCreateChat(self, contacts: list[str]) -> Chat:
+    def _findOrCreateContact(self, username: str) -> Contact:
+        """
+        When given a contact name, either find an already known contact, or
+        create a new one. Then return the contact.
+        """
+        # Try to find an already known contact, if found, return it
+        for c in self._contacts:
+            if c.getUsername() == username:
+                return c
+        
+        # No known contact was found, create one and add it to the contact list
+        c: Contact = Contact(username)
+        self._contacts.append(c)
+        # Save contact persistantly
+        # TODO FILEIO call, save to persistant
+        # Return the new contact
+        return c
+
+    def _findOrCreateChat(self, chatID: str) -> Chat:
         """
         Find a specific chat. If the chat does not exist, create and return it.
         """
+        # Try to find existing chat, if found, return it
         for ch in self._chats:
-            if len(ch.getParticipants()) == len(contacts):
-                isMatch: bool = True
-                for c in contacts:
-                    if c not in ch.getParticipants():
-                        isMatch = False
-                if isMatch:
-                    return ch
+            if ch.getUniqueID() == chatID:
+                return ch
 
-        # TODO add specific make chat method
-        chh: Chat = Chat(contacts)
+        # No chat was found, create a new one and add it to the list
+        chh: Chat = Chat([c.getUsername() for c in self._contacts])
+        self._chats.append(chh)
+        # Save chat persistantly
+        FileReader.updateChat(chh)
+        # Return new chat
         return chh
-    
-    def sendMessage(self, contact: Contact, message: DeliveryMessage) -> None:
-        """
-        """
-        # TODO
-        print("Message send: " + str(self._deliverMessage(contact, message)))
     
     def ping(self, contact: Contact) -> bool:
         """
@@ -62,13 +75,19 @@ class Inbox:
         client.close()
         return True
 
+    def sendMessage(self, contact: Contact, message: DeliveryMessage) -> None:
+        """
+        Sends a message by adding it to the outbox. The message send loop will
+        send the message to contacts when possible.
+        """
+        self._outbox.append(message)
+        FileReader.writeOutbox(self._outbox)
+
     def _deliverMessage(self, contact: Contact, message: DeliveryMessage) -> bool:
         """
         Deliver a message to the contact. If the message delivery fails, return
         false. Otherwise return true.
         """
-        # TODO
-
         # Set the path for the Unix socket
         socket_path = "/tmp/pytuichat_" + contact.getUsername()
 
@@ -89,18 +108,23 @@ class Inbox:
 
         # Receive a response from the server
         response = SPIT.fromString(client.recv(1024).decode())
-        print(f'Received response: {response.toString()}')
-        # TODO handle recieved spit
+        
+        # Handle recieved SPIT
         recieved: bool = True
-        if response.data == SPIT.Status.OK:
-            print("Message sent successfully")
-            message.getMessage().updateStatus(MessageStatus.SENT)
-        else:
-            print("Message not recieved")
+
+        try:
+            if response.data == SPIT.Status.OK:
+                print("Message sent successfully")
+                message.getMessage().updateStatus(MessageStatus.SENT)
+            else:
+                print("Message not recieved")
+                recieved = False
+        except:
             recieved = False
-        # Close the connection
-        client.close()
-        return recieved
+        finally:
+            # Close the connection
+            client.close()
+            return recieved
 
     def _handleConnect(self, server: socket.socket) -> None:
         """TODO"""
@@ -147,7 +171,7 @@ class Inbox:
         """
         # TODO
         print("Recieved message: " + str(dmessage.getMessage().getContent()))
-        c: Chat = self._findOrCreateChat(dmessage.getRecipients())
+        c: Chat = self._findOrCreateChat(dmessage.getChatID())
         c.updateMessageHistory(dmessage.getMessage())
 
     @staticmethod

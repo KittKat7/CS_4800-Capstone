@@ -1,13 +1,37 @@
+from typing import cast
 
 from message import *
 from contact import *
-from typing import cast
+from filereader import FileReader
 
 class Chat:
     def __init__(self, contacts: list[str]):
         self._numUnread: int = 0
         self._participants: list[str] = contacts
         self._history: list[Message] = []
+
+    @staticmethod
+    def encodeParticipantID(contactNames: list[str]) -> str:
+        """
+        Build a unique ID for a chat, from a list of contact names.
+        """
+        # TODO
+        raise NotImplementedError("This method has not yet been implemented")
+    
+    @staticmethod
+    def decodeParticipantID(encoded: str) -> list[str]:
+        """
+        Break a chat unique ID into a list of the contact names.
+        """
+        # TODO
+        raise NotImplementedError("This method has not yet been implemented")
+
+    def getUniqueID(self) -> str:
+        """
+        Returns the unique ID of this chat. This ID is created based on the chat
+        participants.
+        """
+        return Chat.encodeParticipantID(self._participants)
     
     def getParticipants(self) -> list[str]:
         """
@@ -22,8 +46,8 @@ class Chat:
         """
         self._history = [message] + self._history
         self._numUnread += 1
-        print("Update persist messages")
-        # TODO save persistant
+        # Write to persistant storage
+        FileReader.updateChat(self)
     
     def getMessageHistory(self) -> list[Message]:
         """
