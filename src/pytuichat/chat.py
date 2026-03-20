@@ -27,8 +27,8 @@ class Chat:
     
     def getMessageHistory(self) -> list[Message]:
         """
+        Returns this Chat object's Message history as a list
         """
-        # TODO
         return self._history
 
     def toJsonObj(self) -> dict[str, object]:
