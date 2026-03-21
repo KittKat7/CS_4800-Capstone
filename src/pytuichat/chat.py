@@ -15,16 +15,15 @@ class Chat:
         """
         Build a unique ID for a chat, from a list of contact names.
         """
-        # TODO
-        raise NotImplementedError("This method has not yet been implemented")
+        separator = "-"
+        return separator.join(contactNames)
     
     @staticmethod
     def decodeParticipantID(encoded: str) -> list[str]:
         """
         Break a chat unique ID into a list of the contact names.
         """
-        # TODO
-        raise NotImplementedError("This method has not yet been implemented")
+        return encoded.split("-")
 
     def getUniqueID(self) -> str:
         """
