@@ -85,10 +85,7 @@ class FileReader:
         """
         # Might be best to come up with a more concise title convention
         # This will do for now, though
-        title = ""
-        for user in chat.getParticipants():
-            title += user
-        title += ".json"
+        title = Chat.encodeParticipantID(chat.getParticipants()) + ".json"
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_DATA_HOME") or \
                 os.path.join(_home, '.local', 'share', "pytui")
@@ -103,10 +100,7 @@ class FileReader:
         Removes the JSON file representing the given Chat from the pytui local
         data folder. Does nothing if the JSON file does not exist.
         """
-        title = ""
-        for user in chat.getParticipants():
-            title += user
-        title += ".json"
+        title = Chat.encodeParticipantID(chat.getParticipants()) + ".json"
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_DATA_HOME") or \
                 os.path.join(_home, '.local', 'share', "pytui")
