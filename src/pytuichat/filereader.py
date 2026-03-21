@@ -127,6 +127,18 @@ class FileReader:
             raise Exception(f"The file {full_path} was not found")
 
     @staticmethod
+    def getAllTitles() -> list[str]:
+        """
+        Returns the titles of all JSON Chat logs in the pytui local data folder.
+        Ignores non-JSON files and the unique .unsent.json
+        """
+        _home = os.path.expanduser("~")
+        dir_path = os.environ.get("XDG_DATA_HOME") or \
+                os.path.join(_home, '.local', 'share', "pytui")
+        return [f for f in os.listdir(dir_path) if 
+                f != ".unsent.json" and f[-5:] == ".json"]
+
+    @staticmethod
     def storeMessage(dmessage : DeliveryMessage):
         """
         Store a DelivaryMessage that has not been received to reattempt sending 
