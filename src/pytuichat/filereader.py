@@ -83,8 +83,6 @@ class FileReader:
         Create a new JSON file in the pytui local data folder or update an
         existing one. The file will be a JSON representation of the given Chat.
         """
-        # Might be best to come up with a more concise title convention
-        # This will do for now, though
         title = Chat.encodeParticipantID(chat.getParticipants()) + ".json"
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_DATA_HOME") or \
@@ -114,7 +112,6 @@ class FileReader:
     def getChat(title : str) -> Chat:
         """
         Returns Chat object represented by the json file with the given title.
-        TODO need a way to actually get the titles
         # """
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_DATA_HOME") or \

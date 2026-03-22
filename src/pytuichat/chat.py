@@ -2,7 +2,6 @@ from typing import cast
 
 from message import *
 from contact import *
-from filereader import FileReader
 
 class Chat:
     def __init__(self, contacts: list[str]):
@@ -46,7 +45,6 @@ class Chat:
         self._history = [message] + self._history
         self._numUnread += 1
         # Write to persistant storage
-        FileReader.updateChat(self)
     
     def getMessageHistory(self) -> list[Message]:
         """
