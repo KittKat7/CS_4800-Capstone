@@ -16,6 +16,9 @@ class Contact:
         self._isBlocked: bool = False
     
     def getUsername(self) -> str:
+        """
+        Returns the username associated with this Contact object
+        """
         return self._username
 
     def toJsonObj(self) -> object:

@@ -32,16 +32,28 @@ class Message:
         self._sender: str = sender
         
     def updateStatus(self, status: MessageStatus):
+        """
+        Updates this Message object's Status to status
+        """
         self._status = status
 
     def updateContent(self, content: str):
+        """
+        Updates this Message object's Content to content
+        """
         self._content = content
     
     def updateReceived(self, time: datetime):
+        """
+        Updates this Message object's Received to time
+        """
         self._recieved = time
     
-    def updateSent(self, sent: datetime):
-        self._sent = sent
+    def updateSent(self, time: datetime):
+        """
+        Updates this Message object's Sent to time
+        """
+        self._sent = time
     
     def getContent(self) -> str:
         """
