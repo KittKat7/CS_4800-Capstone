@@ -73,9 +73,69 @@ class FileReader:
         except FileNotFoundError:
             print(full_path, "was not found")
             return False
-        except Exception as e:
-            print("Error:\n", e, sep="")
+        
+    @staticmethod
+    def addContact(con : Contact):
+        """
+        Adds a JSON representation of con to .contacts.json, which tracks users
+        who have been previously messaged. If .contacts.json does not exist,
+        create it.
+        """
+        title = ".contacts.json"
+        _home = os.path.expanduser("~")
+        dir_path = os.environ.get("XDG_DATA_HOME") or \
+                os.path.join(_home, '.local', 'share', "pytui")
+        full_path = os.path.join(dir_path, title)
+        if os.path.isfile(full_path):
+            with open(full_path, "r") as f:
+                contacts = json.load(f)
+                contacts.append(con.toJsonObj())
+                f.close()
+                json.dump(contacts, open(full_path, "w"), indent=4)
+        else:
+            contacts = [con.toJsonObj()]
+            json.dump(contacts, open(full_path, "w"), indent=4)
+    
+    @staticmethod
+    def remContact(name : str) -> bool:
+        """
+        Removes the contact with username name from .contacts.json.
+        Returns True if the contact was successfully removed, or False if not.
+        """
+        title = ".contacts.json"
+        _home = os.path.expanduser("~")
+        dir_path = os.environ.get("XDG_DATA_HOME") or \
+                os.path.join(_home, '.local', 'share', "pytui")
+        full_path = os.path.join(dir_path, title)
+        try:
+            with open(full_path, "r") as f:
+                contacts = json.load(f)
+                for i in range(0, len(contacts)):
+                    if Contact.fromJsonObj(contacts[i]).getUsername() == name:
+                        contacts.pop(i)
+                        f.close()
+                        json.dump(contacts, open(full_path, "w"), indent=4)
+                        return True
+                return False
+        except FileNotFoundError:
+            print(full_path, "was not found.")
             return False
+    
+    @staticmethod
+    def getContacts() -> list[Contact]:
+        """
+        Returns a list containing all contacts stored in .contacts.json.
+        """
+        contacts: list[Contact] = []
+        title = ".contacts.json"
+        _home = os.path.expanduser("~")
+        dir_path = os.environ.get("XDG_DATA_HOME") or \
+                os.path.join(_home, '.local', 'share', "pytui")
+        full_path = os.path.join(dir_path, title)
+        with open(full_path, "r") as f:
+            for c in json.load(f):
+                contacts.append(Contact.fromJsonObj(c))
+        return contacts
 
     @staticmethod
     def updateChat(chat : Chat):
