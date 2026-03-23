@@ -6,6 +6,7 @@ from message import *
 from contact import *
 from chat import *
 from spit import *
+from filereader import *
 
 
 class Inbox:
