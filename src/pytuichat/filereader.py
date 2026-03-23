@@ -4,40 +4,54 @@ from chat import *
 
 class FileReader:
     @staticmethod
+    def getConfigDir() -> str:
+        """
+        Returns the path to the directory config files will be stored in.
+        """
+        _home = os.path.expanduser("~")
+        dir_path = os.environ.get("XDG_CONFIG_HOME") or \
+                os.path.join(_home, ".config", "pytui")
+        return dir_path
+    
+    @staticmethod
+    def getDataDir() -> str:
+        """
+        Returns the path to the directory user data files will be stored in.
+        """
+        _home = os.path.expanduser("~")
+        dir_path = os.environ.get("XDG_DATA_HOME") or \
+                os.path.join(_home, ".local", "share", "pytui")
+        return dir_path
+
+    @staticmethod
     def makeSettings():
         """
         Makes the necessary folder for the settings and adds the settings to it.
         """
-        defaults = {'show_nicknames' : 'yes',
-                    'highlight_color' : 'yellow',
-                    'sort_by' : 'most_recent_message',
-                    'confirm_deletion' : 'yes'
+        defaults = {"show_nicknames" : "yes",
+                    "highlight_color" : "yellow",
+                    "sort_by" : "most_recent_message",
+                    "confirm_deletion" : "yes"
                     }
         
         title = "settings.json"
-        _home = os.path.expanduser("~")
-        dir_path = os.environ.get("XDG_CONFIG_HOME") or \
-                os.path.join(_home, ".config","pytui")
+        dir_path = FileReader.getConfigDir()
         full_path = os.path.join(dir_path, title)
         os.makedirs(os.path.dirname(full_path), exist_ok = True)
         try:
-            with open(full_path, 'w') as f:
+            with open(full_path, "w") as f:
                 json.dump(defaults, f, indent=4)
-        except FileExistsError:
-            print(full_path, "already exists")
         except Exception as e:
-            print('Error:\n', e)
-
+            print("Error:\n", e, sep="")
+            
     @staticmethod
-    def getSetting(setting : str) -> str:
+    def getSetting(setting: str) -> str:
         """
         Returns a string representing the current value of setting in the
         settings file, or "" if an error occurs.
         """
         title = "settings.json"
-        _home = os.path.expanduser("~")
-        dir_path = os.environ.get("XDG_CONFIG_HOME") or \
-                os.path.join(_home, ".config","pytui")
+        dir_path = FileReader.getConfigDir()
         full_path = os.path.join(dir_path, title)
         try:
             with open(full_path, "r") as f:
@@ -53,16 +67,16 @@ class FileReader:
             return ""
 
     @staticmethod
-    def changeSetting(setting : str, new : str) -> bool:
+    def changeSetting(setting: str, new: str) -> bool:
         """
         Changes the value of setting in the settings file to new.
         Returns True if the update was successful or False if an error occured.
         """
         title = "settings.json"
-        _home = os.path.expanduser("~")
-        dir_path = os.environ.get("XDG_CONFIG_HOME") or \
-                os.path.join(_home, ".config","pytui")
+        dir_path = FileReader.getConfigDir()
         full_path = os.path.join(dir_path, title)
+        if not os.path.isfile(full_path):
+            FileReader.makeSettings()
         try:
             with open(full_path, "r") as f:
                 settings = json.load(f)
@@ -73,18 +87,19 @@ class FileReader:
         except FileNotFoundError:
             print(full_path, "was not found")
             return False
-        
+        except Exception as e:
+            print("Error:\n", e, sep="")
+            return False
+
     @staticmethod
-    def addContact(con : Contact):
+    def addContact(con: Contact):
         """
         Adds a JSON representation of con to .contacts.json, which tracks users
         who have been previously messaged. If .contacts.json does not exist,
         create it.
         """
         title = ".contacts.json"
-        _home = os.path.expanduser("~")
-        dir_path = os.environ.get("XDG_DATA_HOME") or \
-                os.path.join(_home, '.local', 'share', "pytui")
+        dir_path = FileReader.getDataDir()
         full_path = os.path.join(dir_path, title)
         if os.path.isfile(full_path):
             with open(full_path, "r") as f:
@@ -97,15 +112,13 @@ class FileReader:
             json.dump(contacts, open(full_path, "w"), indent=4)
     
     @staticmethod
-    def remContact(name : str) -> bool:
+    def remContact(name: str) -> bool:
         """
         Removes the contact with username name from .contacts.json.
         Returns True if the contact was successfully removed, or False if not.
         """
         title = ".contacts.json"
-        _home = os.path.expanduser("~")
-        dir_path = os.environ.get("XDG_DATA_HOME") or \
-                os.path.join(_home, '.local', 'share', "pytui")
+        dir_path = FileReader.getDataDir()
         full_path = os.path.join(dir_path, title)
         try:
             with open(full_path, "r") as f:
@@ -128,9 +141,7 @@ class FileReader:
         """
         contacts: list[Contact] = []
         title = ".contacts.json"
-        _home = os.path.expanduser("~")
-        dir_path = os.environ.get("XDG_DATA_HOME") or \
-                os.path.join(_home, '.local', 'share', "pytui")
+        dir_path = FileReader.getDataDir()
         full_path = os.path.join(dir_path, title)
         with open(full_path, "r") as f:
             for c in json.load(f):
@@ -138,50 +149,44 @@ class FileReader:
         return contacts
 
     @staticmethod
-    def updateChat(chat : Chat):
+    def updateChat(chat: Chat):
         """
         Create a new JSON file in the pytui local data folder or update an
         existing one. The file will be a JSON representation of the given Chat.
         """
         title = Chat.encodeParticipantID(chat.getParticipants()) + ".json"
-        _home = os.path.expanduser("~")
-        dir_path = os.environ.get("XDG_DATA_HOME") or \
-                os.path.join(_home, '.local', 'share', "pytui")
+        dir_path = FileReader.getDataDir()
         full_path = os.path.join(dir_path, title)
         os.makedirs(os.path.dirname(full_path), exist_ok = True)
-        with open(full_path, 'w') as f:
+        with open(full_path, "w") as f:
             json.dump(chat.toJsonObj(), f, indent=4)
 
     @staticmethod
-    def removeChat(chat : Chat):
+    def removeChat(chat: Chat):
         """
         Removes the JSON file representing the given Chat from the pytui local
         data folder. Does nothing if the JSON file does not exist.
         """
         title = Chat.encodeParticipantID(chat.getParticipants()) + ".json"
-        _home = os.path.expanduser("~")
-        dir_path = os.environ.get("XDG_DATA_HOME") or \
-                os.path.join(_home, '.local', 'share', "pytui")
+        dir_path = FileReader.getDataDir()
         full_path = os.path.join(dir_path, title)
         try:
             os.remove(full_path)
         except FileNotFoundError:
-            print(full_path, "was not found")
+            print(full_path, "was not found.")
 
     @staticmethod
-    def getChat(title : str) -> Chat:
+    def getChat(title: str) -> Chat:
         """
         Returns Chat object represented by the json file with the given title.
         # """
-        _home = os.path.expanduser("~")
-        dir_path = os.environ.get("XDG_DATA_HOME") or \
-                os.path.join(_home, '.local', 'share', "pytui")
+        dir_path = FileReader.getDataDir()
         full_path = os.path.join(dir_path, title)
         try:
             with open(full_path, "r") as f:
                 return Chat.fromJsonObj(json.load(f))
         except FileNotFoundError:
-            raise Exception(f"The file {full_path} was not found")
+            raise Exception(full_path, "was not found.")
 
     @staticmethod
     def getAllTitles() -> list[str]:
@@ -189,22 +194,19 @@ class FileReader:
         Returns the titles of all JSON Chat logs in the pytui local data folder.
         Ignores non-JSON files and the unique .unsent.json
         """
-        _home = os.path.expanduser("~")
-        dir_path = os.environ.get("XDG_DATA_HOME") or \
-                os.path.join(_home, '.local', 'share', "pytui")
+        dir_path = FileReader.getDataDir()
         return [f for f in os.listdir(dir_path) if 
-                f != ".unsent.json" and f[-5:] == ".json"]
+                f not in [".unsent.json", ".contacts.json"] and 
+                f[-5:] == ".json"]
 
     @staticmethod
-    def storeMessage(dmessage : DeliveryMessage):
+    def storeMessage(dmessage: DeliveryMessage):
         """
         Store a DelivaryMessage that has not been received to reattempt sending 
         at a later time.
         """
         title = ".unsent.json"
-        _home = os.path.expanduser("~")
-        dir_path = os.environ.get("XDG_DATA_HOME") or \
-                os.path.join(_home, '.local', 'share', "pytui")
+        dir_path = FileReader.getDataDir()
         full_path = os.path.join(dir_path, title)
         if os.path.isfile(full_path):
             # Add the DeliveryMessage to the .unsent file
@@ -223,9 +225,7 @@ class FileReader:
         Removes all DeliveryMessages with empty sendingTo lists.
         """
         title = ".unsent.json"
-        _home = os.path.expanduser("~")
-        dir_path = os.environ.get("XDG_DATA_HOME") or \
-                os.path.join(_home, '.local', 'share', "pytui")
+        dir_path = FileReader.getDataDir()
         full_path = os.path.join(dir_path, title)
         try:
             with open(full_path, "r") as f:
@@ -249,12 +249,11 @@ class FileReader:
         """
         Returns a list containing all DeliveryMessages in .unsent.json. Will
         include those that have empty sendingTo lists. Call clearSent() first or
-        filter the output list if this behavior is undesirable.
+        filter the output list if this behavior is undesirable. If .unsent.json
+        does not exist, returns an empty list.
         """
         title = ".unsent.json"
-        _home = os.path.expanduser("~")
-        dir_path = os.environ.get("XDG_DATA_HOME") or \
-                os.path.join(_home, '.local', 'share', "pytui")
+        dir_path = FileReader.getDataDir()
         full_path = os.path.join(dir_path, title)
         try:
             with open(full_path, "r") as f:
