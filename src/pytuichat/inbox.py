@@ -1,6 +1,8 @@
 import socket
 import os
 import json
+# import asyncio
+import threading
 
 from message import *
 from contact import *
@@ -8,57 +10,151 @@ from chat import *
 from spit import *
 from filereader import *
 
+class _InboxOperation(Enum):
+    SEND_MESSAGE = None
+    RECIEVE_MESSAGE = None
 
 class Inbox:
-    def __init__(self):
-        self._contacts: list[Contact] = []
-        self._chats: list[Chat] = []
-        self._outbox: list[DeliveryMessage] = FileReader.getUnsent()
 
-    def getChats(self) -> list[Chat]:
-        return self._chats
+    # initiated
+    _isInit: bool = False
 
-    def _findOrCreateContact(self, username: str) -> Contact:
+    # Fields
+    _contacts: list[Contact] = []
+    _chats: list[Chat] = []
+    _outbox: list[DeliveryMessage] = FileReader.getUnsent()
+
+    _operationStack: list[_InboxOperation] = []
+
+    _msgThread: threading.Thread
+    _cliThread: threading.Thread
+
+    _msgSocket: socket.socket
+    _cliSocket: socket.socket
+
+    @staticmethod
+    def runInbox() -> None:
+        """
+        Runs the setup for an inbox program
+        """
+        if Inbox._isInit:
+            return
+        Inbox._isInit = True
+
+        # Set up and run the messaging socket and threat
+        Inbox._msgSocket = Inbox._createMsgSocket()
+        Inbox._msgSocket.listen(1)
+        Inbox._msgThread = threading.Thread(
+            target = Inbox._messageRecieveLoop
+        )
+
+        # TODO
+        # Set up and run the cli socket and threat
+        Inbox._cliSocket = Inbox._createCliSocket()
+        # Inbox._cliSocket.listen(1)
+        # Inbox._cliThread = threading.Thread(
+        #     target=#TODO
+        # )
+
+    @staticmethod
+    def buildMsgSocketPath(username: str) -> str:
+        """
+        Builds and returns a string path to the socket for the given username.
+        """
+        return "/tmp/pytuichat_" + username + ".sock"
+
+    @staticmethod
+    def buildCliSocketPath() -> str:
+        """
+        Builds and returns a string path to the socket used for cli interactions
+        by the user.
+        """
+        return FileReader.getConfigDir() + "/pytuichat.sock"
+
+    @staticmethod
+    def getChats() -> list[Chat]:
+        """
+        Gets the chats from the inbox.
+        """
+        return Inbox._chats
+
+    @staticmethod
+    def _createMsgSocket() -> socket.socket:
+        socketPath: str = Inbox.buildMsgSocketPath(os.getlogin())
+
+        # unlink socket path
+        try:
+            os.unlink(socketPath)
+        except OSError:
+            if os.path.exists(socketPath):
+                raise
+
+        # create socket
+        msgSocket: socket.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        msgSocket.bind(socketPath)
+        os.chmod(socketPath, 666)
+        return msgSocket
+
+    @staticmethod
+    def _createCliSocket() -> socket.socket:
+        socketPath: str = Inbox.buildCliSocketPath()
+
+        # unlink socket path
+        try:
+            os.unlink(socketPath)
+        except OSError:
+            if os.path.exists(socketPath):
+                raise
+
+        # create socket
+        msgSocket: socket.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        msgSocket.bind(socketPath)
+        return msgSocket
+
+    @staticmethod
+    def _findOrCreateContact(username: str) -> Contact:
         """
         When given a contact name, either find an already known contact, or
         create a new one. Then return the contact.
         """
         # Try to find an already known contact, if found, return it
-        for c in self._contacts:
+        for c in Inbox._contacts:
             if c.getUsername() == username:
                 return c
         
         # No known contact was found, create one and add it to the contact list
         c: Contact = Contact(username)
-        self._contacts.append(c)
+        Inbox._contacts.append(c)
         # Save contact persistantly
         # TODO FILEIO call, save to persistant
         # Return the new contact
         return c
 
-    def _findOrCreateChat(self, chatID: str) -> Chat:
+    @staticmethod
+    def _findOrCreateChat(chatID: str) -> Chat:
         """
         Find a specific chat. If the chat does not exist, create and return it.
         """
         # Try to find existing chat, if found, return it
-        for ch in self._chats:
+        for ch in Inbox._chats:
             if ch.getUniqueID() == chatID:
                 return ch
 
         # No chat was found, create a new one and add it to the list
-        chh: Chat = Chat([c.getUsername() for c in self._contacts])
-        self._chats.append(chh)
+        chh: Chat = Chat([c.getUsername() for c in Inbox._contacts])
+        Inbox._chats.append(chh)
         # Save chat persistantly
         FileReader.updateChat(chh)
         # Return new chat
         return chh
     
-    def ping(self, contact: Contact) -> bool:
+    @staticmethod
+    def ping(contact: Contact) -> bool:
         """
         Returns true if able to ping the socket for the contact.
         """
         # Connect to the contacts server if possible
-        socket_path = "/tmp/pytuichat_" + contact.getUsername()
+        socket_path = Inbox.buildMsgSocketPath(contact.getUsername())
         client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         try:
             client.connect(socket_path)
@@ -76,21 +172,23 @@ class Inbox:
         client.close()
         return True
 
-    def sendMessage(self, contact: Contact, message: DeliveryMessage) -> None:
+    @staticmethod
+    def sendMessage(contact: Contact, message: DeliveryMessage) -> None:
         """
         Sends a message by adding it to the outbox. The message send loop will
         send the message to contacts when possible.
         """
-        self._outbox.append(message)
-        FileReader.writeOutbox(self._outbox)
+        Inbox._outbox.append(message)
+        FileReader.storeMessage(message)
 
-    def _deliverMessage(self, contact: Contact, message: DeliveryMessage) -> bool:
+    @staticmethod
+    def _deliverMessage(contact: Contact, message: DeliveryMessage) -> bool:
         """
         Deliver a message to the contact. If the message delivery fails, return
         false. Otherwise return true.
         """
         # Set the path for the Unix socket
-        socket_path = "/tmp/pytuichat_" + contact.getUsername()
+        socket_path = Inbox.buildMsgSocketPath(contact.getUsername())
 
         # Create the Unix socket client
         client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
@@ -125,12 +223,17 @@ class Inbox:
         finally:
             # Close the connection
             client.close()
-            return recieved
+        return recieved
 
-    def _handleConnect(self, server: socket.socket) -> None:
-        """TODO"""
-        # TODO
-        connection = server.accept()[1]
+    @staticmethod
+    def _handleConnect() -> None:
+        """
+        Waits for a connection. When a connection is made, handles reading and
+        using the connection.
+        """
+
+        # Wait for in inbound connection
+        connection = Inbox._msgSocket.accept()[1]
 
         try:
             print('Connection from', str(connection))
@@ -153,7 +256,7 @@ class Inbox:
                         response = SPIT.Status.OK
                     case SPIT.Type.MESSAGE:
                         dmessage: DeliveryMessage = DeliveryMessage.fromJsonObj(spit.data)
-                        self._onMessageRecieved(dmessage)
+                        Inbox._onMessageRecieved(dmessage)
                         response = SPIT.Status.OK
                     case _:
                         raise Exception("OH NO")
@@ -164,43 +267,22 @@ class Inbox:
         finally:
             # close the connection
             connection.close()
+
+    @staticmethod
+    def _messageRecieveLoop() -> None:
+        while True:
+            Inbox._handleConnect()
     
-    def _onMessageRecieved(self, dmessage: DeliveryMessage) -> None:
+    @staticmethod
+    def _onMessageRecieved(dmessage: DeliveryMessage) -> None:
         """
         Handles when a message is recieved. Provided a Delivery Message, add the
         message to the relevent chat.
         """
         # TODO
         print("Recieved message: " + str(dmessage.getMessage().getContent()))
-        c: Chat = self._findOrCreateChat(dmessage.getChatID())
+        c: Chat = Inbox._findOrCreateChat(dmessage.getChatID())
         c.updateMessageHistory(dmessage.getMessage())
-
-    @staticmethod
-    def runInbox() -> None:
-
-        inbox: Inbox = Inbox()
-
-        # INBOX RUNNER
-        # init sockets
-        socketPath = "/tmp/pytuichat_" + os.getlogin()
-
-        # unlink socket path
-        try:
-            os.unlink(socketPath)
-        except OSError:
-            if os.path.exists(socketPath):
-                raise
-
-        # create socker server
-        server: socket.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        server.bind(socketPath)
-        os.chmod(socketPath, 666)
-
-
-        server.listen(1)
-
-        while True:
-            inbox._handleConnect(server)
 
 
 
