@@ -20,7 +20,7 @@ class Inbox:
     _isInit: bool = False
 
     # Fields
-    _contacts: list[Contact] = []
+    _contacts: dict[str, Contact] = {}
     _chats: list[Chat] = []
     _outbox: list[DeliveryMessage] = FileReader.getUnsent()
 
@@ -117,14 +117,12 @@ class Inbox:
         When given a contact name, either find an already known contact, or
         create a new one. Then return the contact.
         """
-        # Try to find an already known contact, if found, return it
-        for c in Inbox._contacts:
-            if c.getUsername() == username:
-                return c
-        
+        if username in Inbox._contacts:
+            return Inbox._contacts[username]
+
         # No known contact was found, create one and add it to the contact list
         c: Contact = Contact(username)
-        Inbox._contacts.append(c)
+        Inbox._contacts[username] = c
         # Save contact persistantly
         # TODO FILEIO call, save to persistant
         # Return the new contact
@@ -140,8 +138,9 @@ class Inbox:
             if ch.getUniqueID() == chatID:
                 return ch
 
+        # TODO optimize
         # No chat was found, create a new one and add it to the list
-        chh: Chat = Chat([c.getUsername() for c in Inbox._contacts])
+        chh: Chat = Chat([Inbox._contacts[un].getUsername() for un in Inbox._contacts])
         Inbox._chats.append(chh)
         # Save chat persistantly
         FileReader.updateChat(chh)
