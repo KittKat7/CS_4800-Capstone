@@ -1,0 +1,100 @@
+import unittest
+from filereader import *
+
+class TestMessageIO(unittest.TestCase):
+    @staticmethod
+    def testStartInbox() -> None:
+        """
+        """
+
+class TestFileIO(unittest.TestCase):
+    # TODO should store temp copies of the files
+    @classmethod
+    def setUpClass(cls) -> None:
+        return super().setUpClass()
+    # TODO should restore the temp copies of the files to their locations
+    @classmethod
+    def tearDownClass(cls) -> None:
+        return super().tearDownClass()
+    
+    def testMakeSettings(self):
+        """
+        Test that makeSettings() initializes the settings file with the correct
+        default values.
+        """
+        defaults = {"show_nicknames" : "yes",
+                    "highlight_color" : "yellow",
+                    "sort_by" : "most_recent_message",
+                    "confirm_deletion" : "yes"
+                    }
+        FileReader.makeSettings()
+        self.assertTrue(FileReader.getSettings() == defaults)
+
+    def testUpdateSettings(self):
+        """
+        Test that updateSettings correctly changes the value of the settings in
+        the file.
+        """
+        settings = {"show_nicknames" : "yes",
+                    "highlight_color" : "orange",
+                    "sort_by" : "most_recent_message",
+                    "confirm_deletion" : "no"
+                    }
+        # Reset settings to their defaults first
+        FileReader.makeSettings()
+        FileReader.updateSettings(settings)
+        self.assertTrue(FileReader.getSettings() == settings)
+            
+    def testContactList(self):
+        """
+        Test the functions relevant to the stored list of Contacts.
+        """
+        contacts = [Contact("bob1235"), Contact("jerrythesnail")]
+        FileReader.updateContacts(contacts)
+        storedContacts = FileReader.getContacts()
+        self.assertTrue(contacts[i].toJsonObj() == storedContacts[i].toJsonObj()
+                         for i in range(0, 2))
+    
+    def testUnsent(self):
+        """
+        Test the functions relevant to the stored list of unsent Messages.
+        """
+        mes1 = Message("Hi there", "bob1235", MessageStatus.UNREAD)
+        mes2 = Message("Hello!", "jerrythesnail", MessageStatus.SENT)
+        dm1 = DeliveryMessage(mes1, [], "a")
+        dm2 = DeliveryMessage(mes2, ["bob1235"], "a")
+        dms = [dm1, dm2]
+        FileReader.updateUnsentList([dm1, dm2])
+        storeddms = FileReader.getUnsent()
+        self.assertTrue(dms[i].toJsonObj() == storeddms[i].toJsonObj()
+                         for i in range(0, 2))
+    
+    def testHistory(self):
+        """
+        Test that files representing Chats can be successfully stored and read.
+        """
+        ch = Chat(["bob1235", "jerrythesnail"])
+        mes1 = Message("Hi there", "bob1235", MessageStatus.UNREAD)
+        mes2 = Message("Hello!", "jerrythesnail", MessageStatus.SENT)
+        ch.updateMessageHistory(mes1)
+        ch.updateMessageHistory(mes2)
+        FileReader.updateChat(ch)
+        title = Chat.encodeParticipantID(["bob1235", "jerrythesnail"]) + ".json"
+        storedch = FileReader.getChat(title)
+        self.assertTrue(ch.toJsonObj() == storedch.toJsonObj())
+    
+    def testRemoval(self):
+        """
+        Ensure that Chats can be removed from the local files, and that an
+        exception is correctly thrown when trying to access one that does not
+        exist.
+        """
+        ch = Chat(["bob1235", "jerrythesnail"])
+        FileReader.updateChat(ch)
+        FileReader.removeChat(ch)
+        title = Chat.encodeParticipantID(["bob1235", "jerrythesnail"]) + ".json"
+        with self.assertRaises(FileNotFoundError):
+            FileReader.getChat(title)
+
+if __name__ == "__main__":
+    unittest.main()
