@@ -133,7 +133,7 @@ class DeliveryMessage:
         jsonObj: dict[str, object] = {
             "message": self._message.toJsonObj(),
             "sendingTo": self._sendingTo,
-            "recipients": self._chatID
+            "chatID": self._chatID
         }
         return jsonObj
 
