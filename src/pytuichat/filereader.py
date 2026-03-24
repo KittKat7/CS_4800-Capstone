@@ -24,6 +24,17 @@ class FileReader:
         return dir_path
 
     @staticmethod
+    def getChatTitles() -> list[str]:
+        """
+        Returns the titles of all JSON Chat logs in the pytui local data folder.
+        Ignores non-JSON files and the unique .unsent.json
+        """
+        dir_path = FileReader.getDataDir()
+        return [f for f in os.listdir(dir_path) if 
+                f not in [".unsent.json", ".contacts.json"] and 
+                f[-5:] == ".json"]
+
+    @staticmethod
     def makeSettings():
         """
         Makes the necessary folder for the settings and adds the settings to it.
@@ -45,32 +56,24 @@ class FileReader:
             print("Error:\n", e, sep="")
             
     @staticmethod
-    def getSetting(setting: str) -> str:
+    def getSettings() -> dict[str, str]:
         """
-        Returns a string representing the current value of setting in the
-        settings file, or "" if an error occurs.
+        Returns a dict representing the user's list of settings. If the file
+        doesn't exist, create it and populate with the default settings.
         """
         title = "settings.json"
         dir_path = FileReader.getConfigDir()
         full_path = os.path.join(dir_path, title)
-        try:
-            with open(full_path, "r") as f:
-                settings = json.load(f)
-                output = settings[setting]
-                f.close()
-                return output
-        except FileNotFoundError:
-            print(full_path, "was not found")
-            return ""
-        except Exception as e:
-            print("Error:\n", e, sep="")
-            return ""
+        if not os.path.isfile(full_path):
+            FileReader.makeSettings()
+        with open(full_path, "r") as f:
+            settings = json.load(f)
+            return settings
 
     @staticmethod
-    def changeSetting(setting: str, new: str) -> bool:
+    def updateSettings(settings: dict[str, str]):
         """
-        Changes the value of setting in the settings file to new.
-        Returns True if the update was successful or False if an error occured.
+        Updates the settings file with new values.
         """
         title = "settings.json"
         dir_path = FileReader.getConfigDir()
@@ -78,61 +81,25 @@ class FileReader:
         if not os.path.isfile(full_path):
             FileReader.makeSettings()
         try:
-            with open(full_path, "r") as f:
-                settings = json.load(f)
-                settings[setting] = new
-                f.close()
-                json.dump(settings, open(full_path, "w"), indent=4)
-                return True
+            with open(full_path, "w") as f:
+                json.dump(settings, f)
         except FileNotFoundError:
             print(full_path, "was not found")
-            return False
-        except Exception as e:
-            print("Error:\n", e, sep="")
-            return False
 
     @staticmethod
-    def addContact(con: Contact):
+    def updateContacts(con: list[Contact]):
         """
-        Adds a JSON representation of con to .contacts.json, which tracks users
-        who have been previously messaged. If .contacts.json does not exist,
-        create it.
+        Create/update .contacts.json file with a list of the user's contacts.
         """
         title = ".contacts.json"
         dir_path = FileReader.getDataDir()
         full_path = os.path.join(dir_path, title)
-        if os.path.isfile(full_path):
-            with open(full_path, "r") as f:
-                contacts = json.load(f)
-                contacts.append(con.toJsonObj())
-                f.close()
-                json.dump(contacts, open(full_path, "w"), indent=4)
-        else:
-            contacts = [con.toJsonObj()]
+        with open(full_path, "w") as f:
+            contacts: list[object] = []
+            for c in con:
+                contacts.append(c.toJsonObj())
+            f.close()
             json.dump(contacts, open(full_path, "w"), indent=4)
-    
-    @staticmethod
-    def remContact(name: str) -> bool:
-        """
-        Removes the contact with username name from .contacts.json.
-        Returns True if the contact was successfully removed, or False if not.
-        """
-        title = ".contacts.json"
-        dir_path = FileReader.getDataDir()
-        full_path = os.path.join(dir_path, title)
-        try:
-            with open(full_path, "r") as f:
-                contacts = json.load(f)
-                for i in range(0, len(contacts)):
-                    if Contact.fromJsonObj(contacts[i]).getUsername() == name:
-                        contacts.pop(i)
-                        f.close()
-                        json.dump(contacts, open(full_path, "w"), indent=4)
-                        return True
-                return False
-        except FileNotFoundError:
-            print(full_path, "was not found.")
-            return False
     
     @staticmethod
     def getContacts() -> list[Contact]:
@@ -147,7 +114,7 @@ class FileReader:
             for c in json.load(f):
                 contacts.append(Contact.fromJsonObj(c))
         return contacts
-
+    
     @staticmethod
     def updateChat(chat: Chat):
         """
@@ -186,63 +153,22 @@ class FileReader:
             with open(full_path, "r") as f:
                 return Chat.fromJsonObj(json.load(f))
         except FileNotFoundError:
-            raise Exception(full_path, "was not found.")
+            raise FileNotFoundError(full_path, "was not found.")
 
     @staticmethod
-    def getAllTitles() -> list[str]:
+    def updateUnsentList(messages: list[DeliveryMessage]):
         """
-        Returns the titles of all JSON Chat logs in the pytui local data folder.
-        Ignores non-JSON files and the unique .unsent.json
-        """
-        dir_path = FileReader.getDataDir()
-        return [f for f in os.listdir(dir_path) if 
-                f not in [".unsent.json", ".contacts.json"] and 
-                f[-5:] == ".json"]
-
-    @staticmethod
-    def storeMessage(dmessage: DeliveryMessage):
-        """
-        Store a DelivaryMessage that has not been received to reattempt sending 
-        at a later time.
+        Store a list of DelivaryMessages that have not been received to 
+        reattempt sending at a later time. Replaces existing list if it exists.
         """
         title = ".unsent.json"
         dir_path = FileReader.getDataDir()
         full_path = os.path.join(dir_path, title)
-        if os.path.isfile(full_path):
-            # Add the DeliveryMessage to the .unsent file
-            with open(full_path, "r") as f:
-                unsentList = json.load(f)
-                unsentList.append(dmessage.toJsonObj())
-                f.close()
-                json.dump(unsentList, open(full_path, "w"), indent=4)
-        else:
-            # Create a new .unsent file with a list containing the DeliveryMessage
-            json.dump([dmessage.toJsonObj()], open(full_path, "w"), indent=4)
-
-    @staticmethod
-    def clearSent():
-        """
-        Removes all DeliveryMessages with empty sendingTo lists.
-        """
-        title = ".unsent.json"
-        dir_path = FileReader.getDataDir()
-        full_path = os.path.join(dir_path, title)
-        try:
-            with open(full_path, "r") as f:
-                unsentList = json.load(f)
-                targets: list[int] = []
-                for i in range(0, len(unsentList)):
-                    if len(unsentList[i]["sendingTo"]) < 1:
-                        targets.append(i)
-                for t in reversed(targets):
-                    unsentList.pop(t)
-                f.close()
-                json.dump(unsentList, open(full_path, "w"), indent=4)
-        except FileNotFoundError:
-            # If there is no .unsent, no messages to clear
-            pass
-        except Exception as e:
-            print("Error:\n", e, sep="")
+        with open(full_path, "w") as f:
+            unsentList: list[object] = []
+            for dm in messages:
+                unsentList.append(dm.toJsonObj())
+            json.dump(unsentList, f, indent=4)
 
     @staticmethod
     def getUnsent() -> list[DeliveryMessage]:
