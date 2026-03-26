@@ -14,7 +14,7 @@ match args[0]:
         inbox: Inbox = Inbox()
         contact: Contact = Contact(args[1])
         message: Message = Message(args[2], "name")
-        inbox.sendMessage(contact, DeliveryMessage(message, [], "TESTING-CHAT"))
+        inbox._sendMessage(contact, DeliveryMessage(message, [], "TESTING-CHAT"))
 
     case "inbox":
         Inbox.runInbox()

@@ -126,6 +126,12 @@ class DeliveryMessage:
         """
         return self._chatID
 
+    def sentTo(self, contact: str) -> None:
+        """
+        Removes the given contact from the sending to list.
+        """
+        self._sendingTo.remove(contact)
+
     def toJsonObj(self) -> dict[str, object]:
         """
         Turns this instance of DeliveryMessage into a json compatable object.

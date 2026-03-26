@@ -1,7 +1,7 @@
 import socket
 import os
 import json
-# import asyncio
+import asyncio
 import threading
 
 from message import *
@@ -51,7 +51,8 @@ class Inbox:
         Inbox._msgSocket = Inbox._createMsgSocket()
         Inbox._msgSocket.listen(1)
         Inbox._msgThread = threading.Thread(
-            target = Inbox._messageRecieveLoop
+            target = asyncio.gather,
+            args=(Inbox._sendMessageLoop, Inbox._messageRecieveLoop)
         )
 
         # TODO
@@ -175,13 +176,51 @@ class Inbox:
         return True
 
     @staticmethod
-    def sendMessage(message: DeliveryMessage) -> None:
+    async def _sendMessageLoop() -> None:
+        """
+        This loop runs on a timer and will periodically try to resend unsent
+        messages.
+        """
+        outboxLength: int = len(Inbox._outbox)
+        updatePersist: bool = False
+        while True:
+            if len(Inbox._outbox) != outboxLength:
+                updatePersist = True
+
+            for dm in Inbox._outbox:
+                if Inbox._sendMessage(dm):
+                    updatePersist = True
+
+            if updatePersist:
+                FileReader.updateUnsentList(Inbox._outbox)
+                updatePersist = False
+
+            await asyncio.sleep(60)
+
+    @staticmethod
+    def _sendMessage(message: DeliveryMessage) -> bool:
         """
         Sends a message by adding it to the outbox. The message send loop will
         send the message to contacts when possible.
         """
-        Inbox._outbox.append(message)
-        FileReader.updateUnsentList(Inbox._outbox)
+
+        sendTo: list[str] = message.getSendingTo()
+        for c in sendTo:
+            sent: bool = Inbox._deliverMessage(
+                Inbox._findOrCreateContact(c),
+                message,
+            )
+            if sent:
+                message.sentTo(c)
+        
+        if not message.getSendingTo():
+            Inbox._outbox.remove(message)
+            return True
+
+        if message not in Inbox._outbox:
+            Inbox._outbox.append(message)
+
+        return False
 
     @staticmethod
     def _deliverMessage(contact: Contact, message: DeliveryMessage) -> bool:
