@@ -10,8 +10,9 @@ class TestMessageIO(unittest.TestCase):
         """
         Tests that send message adds the message into the inbox's outbox.
         """
-        ib = Inbox()
-        self.assertTrue(ib._outbox == []) # type: ignore
+        Inbox.runInbox()
+        Inbox._outbox = [] #type: ignore
+        self.assertTrue(Inbox._outbox == []) # type: ignore
         dm = DeliveryMessage(
             Message(
                 "TestMSG",
@@ -20,11 +21,10 @@ class TestMessageIO(unittest.TestCase):
             ["jim"],
             "1234"
         )
-        ib._sendMessage(
-            Contact("jim"),
+        Inbox._sendMessage( #type: ignore
             dm
         )
-        self.assertTrue(ib._outbox == [dm]) # type: ignore
+        self.assertTrue(Inbox._outbox == [dm]) # type: ignore
 
 
 class TestFileIO(unittest.TestCase):
