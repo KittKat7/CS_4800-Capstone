@@ -16,7 +16,10 @@ from filereader import *
 
 class Inbox:
 
-    # initiated
+    # Debug mode
+    isDebug: bool
+
+    # Initiated
     _isInit: bool = False
 
     # Fields
@@ -33,13 +36,17 @@ class Inbox:
     _cliSocket: socket.socket
 
     @staticmethod
-    def runInbox() -> None:
+    def runInbox(isDebug: bool = False) -> None:
         """
         Runs the setup for an inbox program
         """
+        # Make sure init is only run once
         if Inbox._isInit:
             return
         Inbox._isInit = True
+
+        # If launching in debug, set the flag
+        Inbox.isDebug = isDebug
 
         Inbox._contacts = FileReader.getContacts()
         tmpChatNames: list[str] = FileReader.getChatTitles()

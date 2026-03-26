@@ -10,7 +10,7 @@ class TestMessageIO(unittest.TestCase):
         """
         Tests that send message adds the message into the inbox's outbox.
         """
-        Inbox.runInbox()
+        Inbox.runInbox(isDebug=True)
         Inbox._outbox = [] #type: ignore
         self.assertTrue(Inbox._outbox == []) # type: ignore
         dm = DeliveryMessage(
