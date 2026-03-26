@@ -1,11 +1,31 @@
 import unittest
+
 from filereader import *
+from inbox import Inbox
+from message import DeliveryMessage, Message
+from contact import Contact
 
 class TestMessageIO(unittest.TestCase):
-    @staticmethod
-    def testStartInbox() -> None:
+    def testSendMessage(self):
         """
+        Tests that send message adds the message into the inbox's outbox.
         """
+        ib = Inbox()
+        self.assertTrue(ib._outbox == []) # type: ignore
+        dm = DeliveryMessage(
+            Message(
+                "TestMSG",
+                "Bob"
+            ),
+            ["jim"],
+            "1234"
+        )
+        ib._sendMessage(
+            Contact("jim"),
+            dm
+        )
+        self.assertTrue(ib._outbox == [dm]) # type: ignore
+
 
 class TestFileIO(unittest.TestCase):
     # TODO should store temp copies of the files
