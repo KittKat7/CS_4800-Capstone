@@ -10,9 +10,9 @@ from chat import *
 from spit import *
 from filereader import *
 
-class _InboxOperation(Enum):
-    SEND_MESSAGE = None
-    RECIEVE_MESSAGE = None
+# class _InboxOperation(Enum):
+#     SEND_MESSAGE = None
+#     RECIEVE_MESSAGE = None
 
 class Inbox:
 
@@ -20,11 +20,11 @@ class Inbox:
     _isInit: bool = False
 
     # Fields
-    _contacts: dict[str, Contact] = {}
-    _chats: list[Chat] = []
-    _outbox: list[DeliveryMessage] = FileReader.getUnsent()
+    _contacts: dict[str, Contact]
+    _chats: dict[str, Chat|None]
+    _outbox: list[DeliveryMessage]
 
-    _operationStack: list[_InboxOperation] = []
+    # _operationQueue: list[_InboxOperation] = []
 
     _msgThread: threading.Thread
     _cliThread: threading.Thread
@@ -40,6 +40,12 @@ class Inbox:
         if Inbox._isInit:
             return
         Inbox._isInit = True
+
+        Inbox._contacts = FileReader.getContacts()
+        tmpChatNames: list[str] = FileReader.getChatTitles()
+        for n in tmpChatNames:
+            Inbox._chats[n] = None
+        Inbox._outbox = FileReader.getUnsent()
 
         # Set up and run the messaging socket and threat
         Inbox._msgSocket = Inbox._createMsgSocket()
@@ -70,13 +76,6 @@ class Inbox:
         by the user.
         """
         return FileReader.getConfigDir() + "/pytuichat.sock"
-
-    @staticmethod
-    def getChats() -> list[Chat]:
-        """
-        Gets the chats from the inbox.
-        """
-        return Inbox._chats
 
     @staticmethod
     def _createMsgSocket() -> socket.socket:
@@ -124,7 +123,7 @@ class Inbox:
         c: Contact = Contact(username)
         Inbox._contacts[username] = c
         # Save contact persistantly
-        # TODO FILEIO call, save to persistant
+        FileReader.updateContacts(Inbox._contacts)
         # Return the new contact
         return c
 
@@ -134,14 +133,18 @@ class Inbox:
         Find a specific chat. If the chat does not exist, create and return it.
         """
         # Try to find existing chat, if found, return it
-        for ch in Inbox._chats:
-            if ch.getUniqueID() == chatID:
-                return ch
+        if chatID in Inbox._chats:
+            if Inbox._chats[chatID] is None:
+                Inbox._chats[chatID] = FileReader.getChat(chatID)
+            return cast(Chat, Inbox._chats[chatID])
+
 
         # TODO optimize
         # No chat was found, create a new one and add it to the list
-        chh: Chat = Chat([Inbox._contacts[un].getUsername() for un in Inbox._contacts])
-        Inbox._chats.append(chh)
+        cl: list[str] = Chat.decodeParticipantID(chatID)
+        for c in cl:
+            Inbox._findOrCreateContact(c)
+        chh: Chat = Chat(cl)
         # Save chat persistantly
         FileReader.updateChat(chh)
         # Return new chat
@@ -172,13 +175,13 @@ class Inbox:
         return True
 
     @staticmethod
-    def sendMessage(contact: Contact, message: DeliveryMessage) -> None:
+    def sendMessage(message: DeliveryMessage) -> None:
         """
         Sends a message by adding it to the outbox. The message send loop will
         send the message to contacts when possible.
         """
         Inbox._outbox.append(message)
-        FileReader.storeMessage(message)
+        FileReader.updateUnsentList(Inbox._outbox)
 
     @staticmethod
     def _deliverMessage(contact: Contact, message: DeliveryMessage) -> bool:
