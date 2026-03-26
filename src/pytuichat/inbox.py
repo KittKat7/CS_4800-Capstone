@@ -8,6 +8,7 @@ from message import *
 from contact import *
 from chat import *
 from spit import *
+from idiot import *
 from filereader import *
 
 # class _InboxOperation(Enum):
@@ -21,6 +22,7 @@ class Inbox:
 
     # Initiated
     _isInit: bool = False
+    _isRunning: bool
 
     # Fields
     _contacts: dict[str, Contact]
@@ -48,6 +50,8 @@ class Inbox:
         # If launching in debug, set the flag
         Inbox.isDebug = isDebug
 
+        Inbox._isRunning = True
+
         Inbox._contacts = FileReader.getContacts()
         tmpChatNames: list[str] = FileReader.getChatTitles()
         for n in tmpChatNames:
@@ -57,18 +61,24 @@ class Inbox:
         # Set up and run the messaging socket and threat
         Inbox._msgSocket = Inbox._createMsgSocket()
         Inbox._msgSocket.listen(1)
+        Inbox._msgSocket.setblocking(False)
         Inbox._msgThread = threading.Thread(
-            target = asyncio.gather,
-            args=(Inbox._sendMessageLoop, Inbox._messageRecieveLoop)
+            target = Inbox._messageRecieveLoop
         )
 
         # TODO
         # Set up and run the cli socket and threat
         Inbox._cliSocket = Inbox._createCliSocket()
-        # Inbox._cliSocket.listen(1)
-        # Inbox._cliThread = threading.Thread(
-        #     target=#TODO
-        # )
+        Inbox._cliSocket.listen(1)
+        Inbox._cliThread = threading.Thread(
+            target=Inbox._cliRecieved
+        )
+
+        print("A")
+        Inbox._msgThread.start()
+        print("b")
+        Inbox._cliThread.start()
+        print("INBOX")
 
     @staticmethod
     def buildMsgSocketPath(username: str) -> str:
@@ -190,7 +200,8 @@ class Inbox:
         """
         outboxLength: int = len(Inbox._outbox)
         updatePersist: bool = False
-        while True:
+        while Inbox._isRunning:
+            print("boop")
             if len(Inbox._outbox) != outboxLength:
                 updatePersist = True
 
@@ -202,7 +213,7 @@ class Inbox:
                 FileReader.updateUnsentList(Inbox._outbox)
                 updatePersist = False
 
-            await asyncio.sleep(60)
+            await asyncio.sleep(1)
 
     @staticmethod
     def _sendMessage(message: DeliveryMessage) -> bool:
@@ -280,14 +291,16 @@ class Inbox:
         using the connection.
         """
 
-        # Wait for in inbound connection
-        connection = Inbox._msgSocket.accept()[1]
+        try:
+            # Wait for in inbound connection
+            connection = Inbox._msgSocket.accept()[1]
+            print('Connection from', str(connection))
+        except:
+            return
 
         try:
-            print('Connection from', str(connection))
-
             # receive data from the client
-            while True:
+            while Inbox._isRunning:
                 data = connection.recv(1024)
                 if not data:
                     break
@@ -317,8 +330,13 @@ class Inbox:
             connection.close()
 
     @staticmethod
-    def _messageRecieveLoop() -> None:
-        while True:
+    async def _messageRecieveLoop() -> None:
+        """
+        Basically a while true loop to handle all messages recieved.
+        """
+        while Inbox._isRunning:
+            await asyncio.sleep(1)
+            print("boop")
             Inbox._handleConnect()
     
     @staticmethod
@@ -332,8 +350,52 @@ class Inbox:
         c: Chat = Inbox._findOrCreateChat(dmessage.getChatID())
         c.updateMessageHistory(dmessage.getMessage())
 
+    @staticmethod
+    def _cliRecieved() -> None:
+        """
+        Basically a while true loop to handle all cli commands.
+        """
+        while Inbox._isRunning:
+            Inbox._handleCliRecieved()
 
+    @staticmethod
+    def _handleCliRecieved() -> None:
+        """
+        Waits and handles connections from the CLI.
+        """
 
+        # Wait for in inbound connection
+        connection = Inbox._cliSocket.accept()[0]
+
+        try:
+            print('Connection from', str(connection))
+
+            # receive data from the client
+            while Inbox._isRunning:
+                data = connection.recv(1024)
+                if not data:
+                    break
+                
+                dataStr: str = data.decode()
+                idiot: IDIOT = IDIOT.fromString(dataStr)
+
+                # Handle type of SPIT
+                
+                response: object
+
+                match idiot.type:
+                    case IDIOT_TYPE.STOP:
+                        Inbox._isRunning = False
+                        raise Exception("Shutting Down!!!")
+                    case _:
+                        raise Exception("OH NO")
+
+                # Send a response back to the client
+                spitResponse: SPIT = SPIT(SPIT.Type.STATUS, response)
+                connection.sendall(spitResponse.toString().encode())
+        finally:
+            # close the connection
+            connection.close()
 
 
 
