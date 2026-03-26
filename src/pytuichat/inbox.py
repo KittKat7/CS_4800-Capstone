@@ -174,6 +174,10 @@ class Inbox:
         Returns true if able to ping the socket for the contact.
         """
         # Connect to the contacts server if possible
+        # TODO handle debugs
+        if Inbox.isDebug:
+            return True
+
         socket_path = Inbox.buildMsgSocketPath(contact.getUsername())
         client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         try:
@@ -221,6 +225,9 @@ class Inbox:
         Sends a message by adding it to the outbox. The message send loop will
         send the message to contacts when possible.
         """
+        # TODO
+        if Inbox.isDebug:
+            return True
 
         sendTo: list[str] = message.getSendingTo()
         for c in sendTo:
@@ -246,6 +253,10 @@ class Inbox:
         Deliver a message to the contact. If the message delivery fails, return
         false. Otherwise return true.
         """
+        # TODO
+        if Inbox.isDebug:
+            return True
+
         # Set the path for the Unix socket
         socket_path = Inbox.buildMsgSocketPath(contact.getUsername())
 
