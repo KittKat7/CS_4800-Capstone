@@ -3,6 +3,16 @@ import json
 from chat import *
 
 class FileReader:
+    # Used for debugging
+    isDebug: bool
+
+    @staticmethod
+    def setDebug(debug: bool):
+        """
+        Sets the debug flag. Actual debug flag functionality is WIP.
+        """
+        FileReader.isDebug = debug
+
     @staticmethod
     def getConfigDir() -> str:
         """
