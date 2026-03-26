@@ -87,7 +87,7 @@ class FileReader:
             print(full_path, "was not found")
 
     @staticmethod
-    def updateContacts(con: list[Contact]):
+    def updateContacts(con: dict[str, Contact]):
         """
         Create/update .contacts.json file with a list of the user's contacts.
         """
@@ -96,23 +96,24 @@ class FileReader:
         full_path = os.path.join(dir_path, title)
         with open(full_path, "w") as f:
             contacts: list[object] = []
-            for c in con:
+            for c in con.values():
                 contacts.append(c.toJsonObj())
             f.close()
             json.dump(contacts, open(full_path, "w"), indent=4)
     
     @staticmethod
-    def getContacts() -> list[Contact]:
+    def getContacts() -> dict[str, Contact]:
         """
         Returns a list containing all contacts stored in .contacts.json.
         """
-        contacts: list[Contact] = []
+        contacts: dict[str, Contact] = {}
         title = ".contacts.json"
         dir_path = FileReader.getDataDir()
         full_path = os.path.join(dir_path, title)
         with open(full_path, "r") as f:
             for c in json.load(f):
-                contacts.append(Contact.fromJsonObj(c))
+                con = Contact.fromJsonObj(c)
+                contacts[con.getUsername()] = con
         return contacts
     
     @staticmethod

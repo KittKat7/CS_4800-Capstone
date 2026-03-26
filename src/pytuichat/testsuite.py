@@ -49,11 +49,12 @@ class TestFileIO(unittest.TestCase):
         """
         Test the functions relevant to the stored list of Contacts.
         """
-        contacts = [Contact("bob1235"), Contact("jerrythesnail")]
+        contacts = {"bob1235" : Contact("bob1235"), 
+                    "jerrythesnail" : Contact("jerrythesnail")}
         FileReader.updateContacts(contacts)
         storedContacts = FileReader.getContacts()
         self.assertTrue(contacts[i].toJsonObj() == storedContacts[i].toJsonObj()
-                         for i in range(0, 2))
+                         for i in contacts.keys())
     
     def testUnsent(self):
         """
