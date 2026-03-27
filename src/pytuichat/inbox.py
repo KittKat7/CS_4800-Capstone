@@ -10,15 +10,13 @@ from chat import *
 from spit import *
 from idiot import *
 from filereader import *
+import debug
 
 # class _InboxOperation(Enum):
 #     SEND_MESSAGE = None
 #     RECIEVE_MESSAGE = None
 
 class Inbox:
-
-    # Debug mode
-    isDebug: bool
 
     # Initiated
     _isInit: bool = False
@@ -48,7 +46,7 @@ class Inbox:
         Inbox._isInit = True
 
         # If launching in debug, set the flag
-        Inbox.isDebug = isDebug
+        debug.isDebug = isDebug
 
         Inbox._isRunning = True
 
@@ -175,7 +173,7 @@ class Inbox:
         """
         # Connect to the contacts server if possible
         # TODO handle debugs
-        if Inbox.isDebug:
+        if debug.isDebug:
             return True
 
         socket_path = Inbox.buildMsgSocketPath(contact.getUsername())
@@ -226,7 +224,7 @@ class Inbox:
         send the message to contacts when possible.
         """
         # TODO
-        if Inbox.isDebug:
+        if debug.isDebug:
             return True
 
         sendTo: list[str] = message.getSendingTo()
@@ -254,7 +252,7 @@ class Inbox:
         false. Otherwise return true.
         """
         # TODO
-        if Inbox.isDebug:
+        if debug.isDebug:
             return True
 
         # Set the path for the Unix socket
