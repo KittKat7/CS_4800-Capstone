@@ -39,10 +39,14 @@ class FileReader:
         Returns the titles of all JSON Chat logs in the pytui local data folder.
         Ignores non-JSON files and the unique .unsent.json
         """
-        dir_path = FileReader.getDataDir()
-        return [f for f in os.listdir(dir_path) if 
-                f not in [".unsent.json", ".contacts.json"] and 
-                f[-5:] == ".json"]
+        # TODO better fix - implement when implementing debug mode
+        try:
+            dir_path = FileReader.getDataDir()
+            return [f for f in os.listdir(dir_path) if 
+                    f not in [".unsent.json", ".contacts.json"] and 
+                    f[-5:] == ".json"]
+        except:
+            return []
 
     @staticmethod
     def makeSettings():
@@ -120,6 +124,10 @@ class FileReader:
         title = ".contacts.json"
         dir_path = FileReader.getDataDir()
         full_path = os.path.join(dir_path, title)
+        # Return an empty map if the file does not exist
+        if not os.path.isfile(full_path):
+            return {}
+
         with open(full_path, "r") as f:
             for c in json.load(f):
                 con = Contact.fromJsonObj(c)
