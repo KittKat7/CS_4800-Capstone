@@ -11,6 +11,7 @@ from spit import *
 from idiot import *
 from filereader import *
 import debug
+import socketio
 
 # class _InboxOperation(Enum):
 #     SEND_MESSAGE = None
@@ -73,11 +74,9 @@ class Inbox:
             target=Inbox._cliRecieved
         )
 
-        print("A")
         Inbox._msgThread.start()
-        print("b")
         Inbox._cliThread.start()
-        print("INBOX")
+        print("Inbox started")
 
     @staticmethod
     def buildMsgSocketPath(username: str) -> str:
@@ -94,79 +93,6 @@ class Inbox:
         """
         return FileReader.getConfigDir() + "/pytuichat.sock"
 
-    @staticmethod
-    def _createMsgSocket() -> socket.socket:
-        socketPath: str = Inbox.buildMsgSocketPath(os.getlogin())
-
-        # unlink socket path
-        try:
-            os.unlink(socketPath)
-        except OSError:
-            if os.path.exists(socketPath):
-                raise
-
-        # create socket
-        msgSocket: socket.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        msgSocket.bind(socketPath)
-        os.chmod(socketPath, 666)
-        return msgSocket
-
-    @staticmethod
-    def _createCliSocket() -> socket.socket:
-        socketPath: str = Inbox.buildCliSocketPath()
-
-        # unlink socket path
-        try:
-            os.unlink(socketPath)
-        except OSError:
-            if os.path.exists(socketPath):
-                raise
-
-        # create socket
-        msgSocket: socket.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-        msgSocket.bind(socketPath)
-        return msgSocket
-
-    @staticmethod
-    def _findOrCreateContact(username: str) -> Contact:
-        """
-        When given a contact name, either find an already known contact, or
-        create a new one. Then return the contact.
-        """
-        if username in Inbox._contacts:
-            return Inbox._contacts[username]
-
-        # No known contact was found, create one and add it to the contact list
-        c: Contact = Contact(username)
-        Inbox._contacts[username] = c
-        # Save contact persistantly
-        FileReader.updateContacts(Inbox._contacts)
-        # Return the new contact
-        return c
-
-    @staticmethod
-    def _findOrCreateChat(chatID: str) -> Chat:
-        """
-        Find a specific chat. If the chat does not exist, create and return it.
-        """
-        # Try to find existing chat, if found, return it
-        if chatID in Inbox._chats:
-            if Inbox._chats[chatID] is None:
-                Inbox._chats[chatID] = FileReader.getChat(chatID)
-            return cast(Chat, Inbox._chats[chatID])
-
-
-        # TODO optimize
-        # No chat was found, create a new one and add it to the list
-        cl: list[str] = Chat.decodeParticipantID(chatID)
-        for c in cl:
-            Inbox._findOrCreateContact(c)
-        chh: Chat = Chat(cl)
-        # Save chat persistantly
-        FileReader.updateChat(chh)
-        # Return new chat
-        return chh
-    
     @staticmethod
     def ping(contact: Contact) -> bool:
         """
@@ -196,6 +122,61 @@ class Inbox:
         return True
 
     @staticmethod
+    def _createMsgSocket() -> socket.socket:
+        """
+        Creates and returns the Msg socket.
+        """
+        socketPath: str = Inbox.buildMsgSocketPath(os.getlogin())
+        return socketio.createSocket(socketPath, 666)
+
+    @staticmethod
+    def _createCliSocket() -> socket.socket:
+        """
+        Creates and returns the CLI socket.
+        """
+        socketPath: str = Inbox.buildCliSocketPath()
+        return socketio.createSocket(socketPath, 600)
+
+    @staticmethod
+    def _findOrCreateContact(username: str) -> Contact:
+        """
+        When given a contact name, either find an already known contact, or
+        create a new one. Then return the contact.
+        """
+        if username in Inbox._contacts:
+            return Inbox._contacts[username]
+
+        # No known contact was found, create one and add it to the contact list
+        c: Contact = Contact(username)
+        Inbox._contacts[username] = c
+        # Save contact persistantly
+        FileReader.updateContacts(Inbox._contacts)
+        # Return the new contact
+        return c
+
+    @staticmethod
+    def _findOrCreateChat(chatID: str) -> Chat:
+        """
+        Find a specific chat. If the chat does not exist, create and return it.
+        """
+        # Try to find existing chat, if found, return it
+        if chatID in Inbox._chats:
+            if Inbox._chats[chatID] is None:
+                Inbox._chats[chatID] = FileReader.getChat(chatID)
+            return cast(Chat, Inbox._chats[chatID])
+
+        # TODO optimize
+        # No chat was found, create a new one and add it to the list
+        cl: list[str] = Chat.decodeParticipantID(chatID)
+        for c in cl:
+            Inbox._findOrCreateContact(c)
+        chh: Chat = Chat(cl)
+        # Save chat persistantly
+        FileReader.updateChat(chh)
+        # Return new chat
+        return chh
+
+    @staticmethod
     async def _sendMessageLoop() -> None:
         """
         This loop runs on a timer and will periodically try to resend unsent
@@ -204,7 +185,6 @@ class Inbox:
         outboxLength: int = len(Inbox._outbox)
         updatePersist: bool = False
         while Inbox._isRunning:
-            print("boop")
             if len(Inbox._outbox) != outboxLength:
                 updatePersist = True
 
@@ -224,8 +204,10 @@ class Inbox:
         Sends a message by adding it to the outbox. The message send loop will
         send the message to contacts when possible.
         """
-        # TODO
+        
+        # If in debug mode, add the message to the debug message queue
         if debug.isDebug:
+            debug.messageQueue.append(message)
             return True
 
         sendTo: list[str] = message.getSendingTo()
@@ -346,8 +328,10 @@ class Inbox:
         """
         while Inbox._isRunning:
             await asyncio.sleep(1)
-            print("boop")
-            Inbox._handleConnect()
+            if debug.isDebug and debug.messageQueue:
+                Inbox._onMessageRecieved(debug.messageQueue.pop(0))
+            else:
+                Inbox._handleConnect()
     
     @staticmethod
     def _onMessageRecieved(dmessage: DeliveryMessage) -> None:
