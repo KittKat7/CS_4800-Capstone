@@ -3,11 +3,16 @@ from enum import Enum
 import json
 
 class IDIOT_TYPE(Enum):
+    # Stop the program
     STOP = -1
+    # Ping the inbox to make sure its running
     PING = 1
-    SEND = 2
-    RECIEVE = 3
-    GETCH = 4
+    # Send a message
+    SEND_MSG = 2
+    # Get a chat
+    GET_CHAT = 3
+    # Get contacts
+    GET_CONTACTS = 4
 
 class IDIOT:
     def __init__(self, type: IDIOT_TYPE, data: object):
