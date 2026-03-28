@@ -6,6 +6,12 @@ from filereader import *
 args = sys.argv[1:]
 
 match args[0]:
+    case "_recieveMessage":
+        msg: Message = Message(args[1], args[2])
+        dmsg: DeliveryMessage = DeliveryMessage(msg, [], Chat.encodeParticipantID([args[2]]))
+        Inbox.runInbox()
+        Inbox._onMessageRecieved(dmsg)
+
     case "ping":
         inbox: Inbox = Inbox()
         inbox.ping(Contact(args[1]))

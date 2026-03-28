@@ -51,6 +51,7 @@ class Inbox:
         Inbox._isRunning = True
 
         Inbox._contacts = FileReader.getContacts()
+        Inbox._chats = {}
         tmpChatNames: list[str] = FileReader.getChatTitles()
         for n in tmpChatNames:
             Inbox._chats[n] = None
@@ -358,6 +359,7 @@ class Inbox:
         print("Recieved message: " + str(dmessage.getMessage().getContent()))
         c: Chat = Inbox._findOrCreateChat(dmessage.getChatID())
         c.updateMessageHistory(dmessage.getMessage())
+        FileReader.updateChat(c)
 
     @staticmethod
     def _cliRecieved() -> None:
