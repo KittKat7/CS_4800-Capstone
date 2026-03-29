@@ -3,16 +3,6 @@ import json
 from chat import *
 
 class FileReader:
-    # Used for debugging
-    isDebug: bool
-
-    @staticmethod
-    def setDebug(debug: bool):
-        """
-        Sets the debug flag. Actual debug flag functionality is WIP.
-        """
-        FileReader.isDebug = debug
-
     @staticmethod
     def getConfigDir() -> str:
         """
@@ -20,7 +10,7 @@ class FileReader:
         """
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_CONFIG_HOME") or \
-                os.path.join(_home, ".config", "pytui")
+                os.path.join(_home, ".config", "pytuichat")
         return dir_path
     
     @staticmethod
@@ -30,7 +20,7 @@ class FileReader:
         """
         _home = os.path.expanduser("~")
         dir_path = os.environ.get("XDG_DATA_HOME") or \
-                os.path.join(_home, ".local", "share", "pytui")
+                os.path.join(_home, ".local", "share", "pytuichat")
         return dir_path
 
     @staticmethod
