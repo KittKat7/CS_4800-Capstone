@@ -54,7 +54,7 @@ class FileReader:
         # TODO better fix - implement when implementing debug mode
         try:
             dir_path = FileReader.getDataDir()
-            return [f for f in os.listdir(dir_path) if 
+            return [f[:-5] for f in os.listdir(dir_path) if 
                     f not in [".unsent.json", ".contacts.json"] and 
                     f[-5:] == ".json"]
         except:
