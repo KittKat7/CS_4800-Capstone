@@ -10,7 +10,7 @@ match args[0]:
         msg: Message = Message(args[1], args[2])
         dmsg: DeliveryMessage = DeliveryMessage(msg, [], Chat.encodeParticipantID([args[2]]))
         Inbox.runInbox()
-        Inbox._onMessageRecieved(dmsg)
+        Inbox._recievedMessage(dmsg)
 
     case "ping":
         inbox: Inbox = Inbox()

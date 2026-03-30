@@ -1,8 +1,23 @@
 import os, socket
 import debug
+from filereader import FileReader
 
 MSGPERMS: int = 666
 CLIPERMS: int = 600
+
+
+def buildMsgSocketPath(username: str) -> str:
+    """
+    Builds and returns a string path to the socket for the given username.
+    """
+    return "/tmp/pytuichat_" + username + ".sock"
+
+def buildCliSocketPath() -> str:
+    """
+    Builds and returns a string path to the socket used for cli interactions
+    by the user.
+    """
+    return FileReader.getConfigDir() + "/pytuichat.sock"
 
 def createSocket(path: str, perms: int) -> socket.socket:
     """
@@ -30,7 +45,7 @@ def sendSocketIO(data: str, socket_path: str) -> str:
     Sends a message to a socket, throws an exception if sending fails, otherwise
     returns the recieved message back.
     """
-    # TODO
+    # TODO add to queue
     if debug.isDebug:
         return ""
 
@@ -57,3 +72,5 @@ def sendSocketIO(data: str, socket_path: str) -> str:
         client.close()
     return response
 
+def sendSocketIOMsg(data: str, contact: str) -> str:
+    return sendSocketIO(data, buildMsgSocketPath(contact))

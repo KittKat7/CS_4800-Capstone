@@ -1,6 +1,5 @@
 import socket
 import os
-import json
 import asyncio
 import threading
 
@@ -63,7 +62,7 @@ class Inbox:
         Inbox._msgSocket.listen(1)
         Inbox._msgSocket.setblocking(False)
         Inbox._msgThread = threading.Thread(
-            target = Inbox._messageRecieveLoop
+            target = Inbox._heartBeat
         )
 
         # TODO
@@ -78,20 +77,6 @@ class Inbox:
         Inbox._cliThread.start()
         print("Inbox started")
 
-    @staticmethod
-    def buildMsgSocketPath(username: str) -> str:
-        """
-        Builds and returns a string path to the socket for the given username.
-        """
-        return "/tmp/pytuichat_" + username + ".sock"
-
-    @staticmethod
-    def buildCliSocketPath() -> str:
-        """
-        Builds and returns a string path to the socket used for cli interactions
-        by the user.
-        """
-        return FileReader.getConfigDir() + "/pytuichat.sock"
 
     @staticmethod
     def ping(contact: Contact) -> bool:
@@ -103,7 +88,7 @@ class Inbox:
         if debug.isDebug:
             return True
 
-        socket_path = Inbox.buildMsgSocketPath(contact.getUsername())
+        socket_path = socketio.buildMsgSocketPath(contact.getUsername())
         client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         try:
             client.connect(socket_path)
@@ -126,7 +111,7 @@ class Inbox:
         """
         Creates and returns the Msg socket.
         """
-        socketPath: str = Inbox.buildMsgSocketPath(os.getlogin())
+        socketPath: str = socketio.buildMsgSocketPath(os.getlogin())
         return socketio.createSocket(socketPath, socketio.MSGPERMS)
 
     @staticmethod
@@ -134,7 +119,7 @@ class Inbox:
         """
         Creates and returns the CLI socket.
         """
-        socketPath: str = Inbox.buildCliSocketPath()
+        socketPath: str = socketio.buildCliSocketPath()
         return socketio.createSocket(socketPath, socketio.CLIPERMS)
 
     @staticmethod
@@ -177,26 +162,22 @@ class Inbox:
         return chh
 
     @staticmethod
-    async def _sendMessageLoop() -> None:
+    def _sendAllMessages() -> None:
         """
-        This loop runs on a timer and will periodically try to resend unsent
-        messages.
+        Tries to send all messages in the outbox.
         """
         outboxLength: int = len(Inbox._outbox)
         updatePersist: bool = False
-        while Inbox._isRunning:
-            if len(Inbox._outbox) != outboxLength:
+        if len(Inbox._outbox) != outboxLength:
+            updatePersist = True
+
+        for dm in Inbox._outbox:
+            if Inbox._sendMessage(dm):
                 updatePersist = True
 
-            for dm in Inbox._outbox:
-                if Inbox._sendMessage(dm):
-                    updatePersist = True
-
-            if updatePersist:
-                FileReader.updateUnsentList(Inbox._outbox)
-                updatePersist = False
-
-            await asyncio.sleep(1)
+        if updatePersist:
+            FileReader.updateUnsentList(Inbox._outbox)
+            updatePersist = False
 
     @staticmethod
     def _sendMessage(message: DeliveryMessage) -> bool:
@@ -204,20 +185,31 @@ class Inbox:
         Sends a message by adding it to the outbox. The message send loop will
         send the message to contacts when possible.
         """
-        
-        # If in debug mode, add the message to the debug message queue
-        if debug.isDebug:
-            debug.messageQueue.append(message)
-            return True
 
         sendTo: list[str] = message.getSendingTo()
         for c in sendTo:
-            sent: bool = Inbox._deliverMessage(
-                Inbox._findOrCreateContact(c),
-                message,
-            )
-            if sent:
-                message.sentTo(c)
+            spit: SPIT = SPIT(SPIT.Type.MESSAGE, json.dumps(message.toJsonObj()))
+
+            responseStr: str
+            try:
+                responseStr = socketio.sendSocketIOMsg(spit.toString(), c)
+            except:
+                continue
+
+            try:
+                # Receive a response from the server
+                response: SPIT = SPIT.fromString(responseStr)
+                if response.data == SPIT.Status.OK:
+                    print("Message sent successfully")
+                    message.getMessage().updateStatus(MessageStatus.SENT)
+                else:
+                    print("Message not recieved")
+                    continue
+            except:
+                continue
+
+            # Fail cases will continue, leaving this to run when it succeeds
+            message.sentTo(c)
         
         if not message.getSendingTo():
             Inbox._outbox.remove(message)
@@ -228,44 +220,14 @@ class Inbox:
 
         return False
 
-    @staticmethod
-    def _deliverMessage(contact: Contact, message: DeliveryMessage) -> bool:
-        """
-        Deliver a message to the contact. If the message delivery fails, return
-        false. Otherwise return true.
-        """
-        # Set the path for the Unix socket
-        socket_path = Inbox.buildMsgSocketPath(contact.getUsername())
 
-        spit: SPIT = SPIT(SPIT.Type.MESSAGE, json.dumps(message.toJsonObj()))
 
-        responseStr: str
-        try:
-            responseStr = socketio.sendSocketIO(spit.toString(), socket_path)
-        except:
-            return False
-
-        # Handle recieved SPIT
-        recieved: bool = True
-
-        try:
-            # Receive a response from the server
-            response: SPIT = SPIT.fromString(responseStr)
-            if response.data == SPIT.Status.OK:
-                print("Message sent successfully")
-                message.getMessage().updateStatus(MessageStatus.SENT)
-            else:
-                print("Message not recieved")
-                recieved = False
-        except:
-            recieved = False
-        return recieved
 
     @staticmethod
-    def _handleConnect() -> None:
+    def _handleMsgConnect() -> None:
         """
-        Waits for a connection. When a connection is made, handles reading and
-        using the connection.
+        Handle a connection if there is one. When a connection is made, handles
+        reading and using the connection.
         """
 
         try:
@@ -293,8 +255,9 @@ class Inbox:
                     case SPIT.Type.PING:
                         response = SPIT.Status.OK
                     case SPIT.Type.MESSAGE:
-                        dmessage: DeliveryMessage = DeliveryMessage.fromJsonObj(spit.data)
-                        Inbox._onMessageRecieved(dmessage)
+                        dmessage: DeliveryMessage = DeliveryMessage.fromJsonObj(
+                            spit.data)
+                        Inbox._recievedMessage(dmessage)
                         response = SPIT.Status.OK
                     case _:
                         raise Exception("OH NO")
@@ -305,21 +268,9 @@ class Inbox:
         finally:
             # close the connection
             connection.close()
-
-    @staticmethod
-    async def _messageRecieveLoop() -> None:
-        """
-        Basically a while true loop to handle all messages recieved.
-        """
-        while Inbox._isRunning:
-            await asyncio.sleep(1)
-            if debug.isDebug and debug.messageQueue:
-                Inbox._onMessageRecieved(debug.messageQueue.pop(0))
-            else:
-                Inbox._handleConnect()
     
     @staticmethod
-    def _onMessageRecieved(dmessage: DeliveryMessage) -> None:
+    def _recievedMessage(dmessage: DeliveryMessage) -> None:
         """
         Handles when a message is recieved. Provided a Delivery Message, add the
         message to the relevent chat.
@@ -376,6 +327,38 @@ class Inbox:
         finally:
             # close the connection
             connection.close()
+
+    @staticmethod
+    async def _heartBeat() -> None:
+        """
+        Runs every second as a heartbeat.
+        """
+        MAX_TIME: int = 65535
+        MAX_LOWER: int = -65536
+        RESEND_TIME: int = 60
+        CHECK_INBOX_TIME: int = 1
+
+        time: int = 0
+        
+        while Inbox._isRunning:
+            await asyncio.sleep(1)
+
+            # Handle resent heartbeat
+            if time % RESEND_TIME == 0:
+                # TODO resend things
+                Inbox._sendAllMessages()
+
+            # Handle check inbox timeout
+            if time % CHECK_INBOX_TIME == 0:
+                # TODO check inbox
+                Inbox._handleMsgConnect()
+
+            # If time passes MAX_TIME reset the time to 0
+            if time >= MAX_TIME:
+                time = MAX_LOWER
+            # Increment the time
+            time += 1
+
 
 
 
