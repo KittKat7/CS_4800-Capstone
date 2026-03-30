@@ -1,6 +1,7 @@
 import os
 import json
 from chat import *
+import debug
 
 class FileReader:
     @staticmethod
@@ -24,6 +25,27 @@ class FileReader:
         return dir_path
 
     @staticmethod
+    def readFile(path: str) -> str:
+        """
+        Reads the contents of requested file and returns JSON object, or "" if
+        in debug mode.
+        """
+        if debug.isDebug:
+            return ""
+        with open(path, "r") as f:
+            return f.read()
+    
+    @staticmethod
+    def writeFile(path: str, contents: object):
+        """
+        Writes JSON object contents to the requested file, unless in debug mode.
+        """
+        if debug.isDebug:
+            return
+        with open(path, "w") as f:
+            json.dump(contents, f, indent = 4)
+
+    @staticmethod
     def getChatTitles() -> list[str]:
         """
         Returns the titles of all JSON Chat logs in the pytui local data folder.
@@ -43,10 +65,11 @@ class FileReader:
         """
         Makes the necessary folder for the settings and adds the settings to it.
         """
-        defaults = {"show_nicknames" : "yes",
-                    "highlight_color" : "yellow",
-                    "sort_by" : "most_recent_message",
-                    "confirm_deletion" : "yes"
+        defaults = {
+                        "show_nicknames" : "yes",
+                        "highlight_color" : "yellow",
+                        "sort_by" : "most_recent_message",
+                        "confirm_deletion" : "yes"
                     }
         
         title = "settings.json"
@@ -54,8 +77,7 @@ class FileReader:
         full_path = os.path.join(dir_path, title)
         os.makedirs(os.path.dirname(full_path), exist_ok = True)
         try:
-            with open(full_path, "w") as f:
-                json.dump(defaults, f, indent=4)
+            FileReader.writeFile(full_path, json.dumps(defaults))
         except Exception as e:
             print("Error:\n", e, sep="")
             
@@ -70,9 +92,7 @@ class FileReader:
         full_path = os.path.join(dir_path, title)
         if not os.path.isfile(full_path):
             FileReader.makeSettings()
-        with open(full_path, "r") as f:
-            settings = json.load(f)
-            return settings
+        return cast(dict[str, str], json.loads(FileReader.readFile(full_path)))
 
     @staticmethod
     def updateSettings(settings: dict[str, str]):
@@ -84,11 +104,7 @@ class FileReader:
         full_path = os.path.join(dir_path, title)
         if not os.path.isfile(full_path):
             FileReader.makeSettings()
-        try:
-            with open(full_path, "w") as f:
-                json.dump(settings, f)
-        except FileNotFoundError:
-            print(full_path, "was not found")
+        FileReader.writeFile(full_path, settings)
 
     @staticmethod
     def updateContacts(con: dict[str, Contact]):
@@ -98,12 +114,10 @@ class FileReader:
         title = ".contacts.json"
         dir_path = FileReader.getDataDir()
         full_path = os.path.join(dir_path, title)
-        with open(full_path, "w") as f:
-            contacts: list[object] = []
-            for c in con.values():
-                contacts.append(c.toJsonObj())
-            f.close()
-            json.dump(contacts, open(full_path, "w"), indent=4)
+        contacts: list[object] = []
+        for c in con.values():
+            contacts.append(c.toJsonObj())
+        FileReader.writeFile(full_path, contacts)
     
     @staticmethod
     def getContacts() -> dict[str, Contact]:
@@ -118,10 +132,9 @@ class FileReader:
         if not os.path.isfile(full_path):
             return {}
 
-        with open(full_path, "r") as f:
-            for c in json.load(f):
-                con = Contact.fromJsonObj(c)
-                contacts[con.getUsername()] = con
+        for c in json.loads(FileReader.readFile(full_path)):
+            con = Contact.fromJsonObj(c)
+            contacts[con.getUsername()] = con
         return contacts
     
     @staticmethod
@@ -134,8 +147,7 @@ class FileReader:
         dir_path = FileReader.getDataDir()
         full_path = os.path.join(dir_path, title)
         os.makedirs(os.path.dirname(full_path), exist_ok = True)
-        with open(full_path, "w") as f:
-            json.dump(chat.toJsonObj(), f, indent=4)
+        FileReader.writeFile(full_path, chat.toJsonObj())
 
     @staticmethod
     def removeChat(chat: Chat):
@@ -159,8 +171,8 @@ class FileReader:
         dir_path = FileReader.getDataDir()
         full_path = os.path.join(dir_path, title)
         try:
-            with open(full_path, "r") as f:
-                return Chat.fromJsonObj(json.load(f))
+            ch = json.loads(FileReader.readFile(full_path))
+            return Chat.fromJsonObj(ch)
         except FileNotFoundError:
             raise FileNotFoundError(full_path, "was not found.")
 
@@ -173,11 +185,10 @@ class FileReader:
         title = ".unsent.json"
         dir_path = FileReader.getDataDir()
         full_path = os.path.join(dir_path, title)
-        with open(full_path, "w") as f:
-            unsentList: list[object] = []
-            for dm in messages:
-                unsentList.append(dm.toJsonObj())
-            json.dump(unsentList, f, indent=4)
+        unsentList: list[object] = []
+        for dm in messages:
+            unsentList.append(dm.toJsonObj())
+        FileReader.writeFile(full_path, unsentList)
 
     @staticmethod
     def getUnsent() -> list[DeliveryMessage]:
@@ -191,11 +202,9 @@ class FileReader:
         dir_path = FileReader.getDataDir()
         full_path = os.path.join(dir_path, title)
         try:
-            with open(full_path, "r") as f:
-                dms: list[DeliveryMessage] = []
-                unsentList = json.load(f)
-                for dm in unsentList:
-                    dms.append(DeliveryMessage.fromJsonObj(dm))
-                return dms
+            dms: list[DeliveryMessage] = []
+            for dm in json.loads(FileReader.readFile(full_path)):
+                dms.append(DeliveryMessage.fromJsonObj(dm))
+            return dms
         except FileNotFoundError:
             return []
