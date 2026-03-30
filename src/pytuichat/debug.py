@@ -1,5 +1,5 @@
 
-from pytuichat.message import DeliveryMessage
+from message import DeliveryMessage
 
 
 isDebug: bool = False
