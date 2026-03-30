@@ -1,6 +1,9 @@
 import os, socket
 import debug
 
+MSGPERMS: int = 666
+CLIPERMS: int = 600
+
 def createSocket(path: str, perms: int) -> socket.socket:
     """
     Creates and returns a socket at the given file path. If the file already
