@@ -24,7 +24,8 @@ class TestMessageIO(unittest.TestCase):
         Inbox._sendMessage( #type: ignore
             dm
         )
-        self.assertTrue(Inbox._outbox == [dm]) # type: ignore
+        self.assertTrue(Inbox._outbox == []) # type: ignore
+        self.assertTrue(debug.message == [dm]) # type: ignore
 
 
 class TestFileIO(unittest.TestCase):

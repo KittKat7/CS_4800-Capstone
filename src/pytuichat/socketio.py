@@ -24,3 +24,36 @@ def createSocket(path: str, perms: int) -> socket.socket:
     msgSocket.bind(path)
     os.chmod(path, perms)
     return msgSocket
+
+def sendSocketIO(data: str, socket_path: str) -> str:
+    """
+    Sends a message to a socket, throws an exception if sending fails, otherwise
+    returns the recieved message back.
+    """
+    # TODO
+    if debug.isDebug:
+        return ""
+
+    # Create the Unix socket client
+    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+
+    response: str = ""
+
+    try:
+        # Connect to the server
+        # If it fails, return false
+        client.connect(socket_path)
+
+        # Send a message to the server
+        client.sendall(data.encode())
+
+        # Receive a response from the server
+        response = client.recv(1024).decode()
+    except:
+        client.close()
+        raise Exception("Failed to send")
+    finally:
+        # Close the connection
+        client.close()
+    return response
+

@@ -234,35 +234,23 @@ class Inbox:
         Deliver a message to the contact. If the message delivery fails, return
         false. Otherwise return true.
         """
-        # TODO
-        if debug.isDebug:
-            return True
-
         # Set the path for the Unix socket
         socket_path = Inbox.buildMsgSocketPath(contact.getUsername())
 
-        # Create the Unix socket client
-        client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+        spit: SPIT = SPIT(SPIT.Type.MESSAGE, json.dumps(message.toJsonObj()))
 
-        # Connect to the server
-        # If it fails, return false
+        responseStr: str
         try:
-            client.connect(socket_path)
+            responseStr = socketio.sendSocketIO(spit.toString(), socket_path)
         except:
             return False
 
-        spit: SPIT = SPIT(SPIT.Type.MESSAGE, json.dumps(message.toJsonObj()))
-
-        # Send a message to the server
-        client.sendall(spit.toString().encode())
-
-        # Receive a response from the server
-        response = SPIT.fromString(client.recv(1024).decode())
-        
         # Handle recieved SPIT
         recieved: bool = True
 
         try:
+            # Receive a response from the server
+            response: SPIT = SPIT.fromString(responseStr)
             if response.data == SPIT.Status.OK:
                 print("Message sent successfully")
                 message.getMessage().updateStatus(MessageStatus.SENT)
@@ -271,9 +259,6 @@ class Inbox:
                 recieved = False
         except:
             recieved = False
-        finally:
-            # Close the connection
-            client.close()
         return recieved
 
     @staticmethod
