@@ -13,7 +13,7 @@ def ping() -> bool:
     Returns true if able to ping the socket for the inbox
     """
     # Connect to the contacts server if possible
-    socket_path = Inbox.buildCliSocketPath()
+    socket_path = socketio.buildCliSocketPath()
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     try:
         client.connect(socket_path)
@@ -43,7 +43,7 @@ def stop():
     Returns true if able to ping the socket for the inbox
     """
     # Connect to the contacts server if possible
-    socket_path = Inbox.buildCliSocketPath()
+    socket_path = socketio.buildCliSocketPath()
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     try:
         client.connect(socket_path)

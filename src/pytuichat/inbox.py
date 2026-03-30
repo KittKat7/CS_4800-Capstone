@@ -62,7 +62,7 @@ class Inbox:
         Inbox._msgSocket.listen(1)
         Inbox._msgSocket.setblocking(False)
         Inbox._msgThread = threading.Thread(
-            target = Inbox._heartBeat
+            target = Inbox._startHeartbeat
         )
 
         # TODO
@@ -70,7 +70,7 @@ class Inbox:
         Inbox._cliSocket = Inbox._createCliSocket()
         Inbox._cliSocket.listen(1)
         Inbox._cliThread = threading.Thread(
-            target=Inbox._cliRecieved
+            target = Inbox._cliRecieved
         )
 
         Inbox._msgThread.start()
@@ -220,9 +220,6 @@ class Inbox:
 
         return False
 
-
-
-
     @staticmethod
     def _handleMsgConnect() -> None:
         """
@@ -329,7 +326,14 @@ class Inbox:
             connection.close()
 
     @staticmethod
-    async def _heartBeat() -> None:
+    def _startHeartbeat() -> None:
+        """
+        Starts the hearbeat of the inbox.
+        """
+        asyncio.run(Inbox._heartbeat())
+
+    @staticmethod
+    async def _heartbeat() -> None:
         """
         Runs every second as a heartbeat.
         """
@@ -341,6 +345,7 @@ class Inbox:
         time: int = 0
         
         while Inbox._isRunning:
+            print("beat")
             await asyncio.sleep(1)
 
             # Handle resent heartbeat
