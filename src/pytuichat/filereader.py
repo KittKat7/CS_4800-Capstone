@@ -169,7 +169,7 @@ class FileReader:
         Returns Chat object represented by the json file with the given title.
         # """
         dir_path = FileReader.getDataDir()
-        full_path = os.path.join(dir_path, title)
+        full_path = os.path.join(dir_path, title + ".json")
         try:
             ch = json.loads(FileReader.readFile(full_path))
             return Chat.fromJsonObj(ch)
