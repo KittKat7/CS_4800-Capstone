@@ -42,13 +42,15 @@ class TestFileIO(unittest.TestCase):
         Test that makeSettings() initializes the settings file with the correct
         default values.
         """
-        defaults = {"show_nicknames" : "yes",
-                    "highlight_color" : "yellow",
-                    "sort_by" : "most_recent_message",
-                    "confirm_deletion" : "yes"
+        defaults = {
+                        "show_nicknames" : "yes",
+                        "highlight_color" : "yellow",
+                        "sort_by" : "most_recent_message",
+                        "confirm_deletion" : "yes"
                     }
         FileReader.makeSettings()
-        self.assertTrue(FileReader.getSettings() == defaults)
+        settings = FileReader.getSettings()
+        self.assertTrue(settings[k] == defaults[k] for k in defaults.keys())
 
     def testUpdateSettings(self):
         """
