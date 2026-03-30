@@ -2,8 +2,9 @@ import os, socket
 import debug
 from filereader import FileReader
 
-MSGPERMS: int = 666
-CLIPERMS: int = 600
+# 0o prefix denotes octal
+MSGPERMS: int = 0o666
+CLIPERMS: int = 0o600
 
 
 def buildMsgSocketPath(username: str) -> str:

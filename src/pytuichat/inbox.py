@@ -284,6 +284,7 @@ class Inbox:
         Basically a while true loop to handle all cli commands.
         """
         while Inbox._isRunning:
+            print("run run run")
             Inbox._handleCliRecieved()
 
     @staticmethod
@@ -292,14 +293,16 @@ class Inbox:
         Waits and handles connections from the CLI.
         """
 
+        print("aaaa")
         # Wait for in inbound connection
         connection = Inbox._cliSocket.accept()[0]
 
+        print("bbbb")
         try:
             print('Connection from', str(connection))
 
             # receive data from the client
-            while Inbox._isRunning:
+            while True:
                 data = connection.recv(1024)
                 if not data:
                     break
