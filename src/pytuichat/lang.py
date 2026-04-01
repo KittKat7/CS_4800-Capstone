@@ -20,7 +20,7 @@ def setLangMap(language: str):
         raise Exception("Language does not exist!")
 
 
-def getString(key: str) -> str | None:
+def getString(key: str) -> str:
     """
     Gets a string from the current language. If the string does not exist,
     returns none.
@@ -31,4 +31,4 @@ def getString(key: str) -> str | None:
     if key in LangMap.langMap.keys():
         return LangMap.langMap[key]
     else:
-        return None
+        raise Exception("Failed to find string!")

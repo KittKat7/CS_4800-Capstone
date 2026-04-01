@@ -5,8 +5,11 @@ import subprocess
 
 from inbox import *
 from filereader import *
+import lang
 
 args = sys.argv[1:]
+
+lang.setLangMap("en_us")
 
 def ping() -> bool:
     """
@@ -38,7 +41,7 @@ def start() -> bool:
         )
         return True
 
-def stop():
+def stop() -> bool:
     """
     Returns true if able to ping the socket for the inbox
     """
@@ -52,6 +55,32 @@ def stop():
         return True
     except Exception:
         return False
+
+def listChats():
+    """
+    Returns a list of chats and info about the chats.
+    """
+    response: IDIOT = IDIOT.fromString(
+        socketio.sendSocketIOCli(IDIOT(IDIOT_TYPE.LIST_CHATS, "").toString()))
+    return response.data
+
+def _formatMessage(msg: Message) -> str:
+    """
+    Formats a given message into a readable string.
+    """
+    return f"{msg.getStatus().value} {str(msg.getSent().strftime("%Y%m%d %I%M%p"))} {msg.getSender()}: {msg.getContent()}"
+
+def getMsgs(id: str, n: int = 1) -> str:
+    """
+    TODO
+    """
+    response: IDIOT = IDIOT.fromString(
+        socketio.sendSocketIOCli(IDIOT(IDIOT_TYPE.GET_MSGS, json.dumps({"id": id, "n": n})).toString()))
+    
+    msgStr: str = ""
+    for m in json.loads(response.data):
+        msgStr += _formatMessage(Message.fromJsonObj(m)) + "\n"
+    return msgStr + lang.getString("endReq")
 
 match args[0]:
     case "start":
@@ -67,5 +96,12 @@ match args[0]:
     case "stop":
         stop()
         print("Inbox has stopped")
+    case "listChats":
+        chats = listChats()
+        print(chats)
+
+    case "getMsgs":
+        chat = getMsgs(args[1], int(args[2]))
+        print(chat)
     case _:
         print("UNKNOWN: " + args[0])

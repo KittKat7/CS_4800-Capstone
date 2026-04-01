@@ -60,6 +60,24 @@ class Message:
         Returns this Message's content
         """
         return self._content
+
+    def getSent(self) -> datetime:
+        """
+        Returns the time this message was sent.
+        """
+        return self._sent
+    
+    def getSender(self) -> str:
+        """
+        Returns the sender of the message.
+        """
+        return self._sender
+
+    def getStatus(self) -> MessageStatus:
+        """
+        Returns the status of the message.
+        """
+        return self._status
         
     def toJsonObj(self) -> object:
         """

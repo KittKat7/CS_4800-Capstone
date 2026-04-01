@@ -54,7 +54,7 @@ class Inbox:
         Inbox._chats = {}
         tmpChatNames: list[str] = FileReader.getChatTitles()
         for n in tmpChatNames:
-            Inbox._chats[n] = None
+            Inbox._chats[n] = FileReader.getChat(n)
         Inbox._outbox = FileReader.getUnsent()
 
         # Set up and run the messaging socket and threat
@@ -310,20 +310,42 @@ class Inbox:
                 dataStr: str = data.decode()
                 idiot: IDIOT = IDIOT.fromString(dataStr)
 
-                # Handle type of SPIT
-                
-                response: object
-
+                # Handle the incoming idiot
                 match idiot.type:
+                    # When the STOP command is recieved
                     case IDIOT_TYPE.STOP:
                         Inbox._isRunning = False
                         raise Exception("Shutting Down!!!")
+                    case IDIOT_TYPE.LIST_CHATS:
+                        idiotResponse: IDIOT = IDIOT(
+                            IDIOT_TYPE.LIST_CHATS,
+                            str(Inbox._chats))
+                        connection.sendall(idiotResponse.toString().encode())
+                    case IDIOT_TYPE.GET_MSGS:
+                        # Get data from recieved message
+                        idata: dict[str, object] = json.loads(idiot.data)
+                        id: str = cast(str, idata["id"])
+                        n: int = cast(int, idata["n"])
+
+                        history: list[Message]
+                        if not Inbox._chats[id]:
+                            history = []
+                        else:
+                            history = cast(Chat, Inbox._chats[id]).getMessageHistory()[0:n]
+                        
+                        responseJson: list[object] = []
+                        for m in history:
+                            responseJson.append(m.toJsonObj())
+                        # responseStr: str = ""
+                        # for m in history:
+                        #     responseStr += f"{str(m.getSent().strftime("%Y%m%d %I%M%p"))} {m.getSender()}: {m.getContent()}\n"
+
+                        idiotResponse: IDIOT = IDIOT(
+                            IDIOT_TYPE.LIST_CHATS, json.dumps(responseJson))
+                        connection.sendall(idiotResponse.toString().encode())
                     case _:
                         raise Exception("OH NO")
 
-                # Send a response back to the client
-                spitResponse: SPIT = SPIT(SPIT.Type.STATUS, response)
-                connection.sendall(spitResponse.toString().encode())
         finally:
             # close the connection
             connection.close()

@@ -75,3 +75,6 @@ def sendSocketIO(data: str, socket_path: str) -> str:
 
 def sendSocketIOMsg(data: str, contact: str) -> str:
     return sendSocketIO(data, buildMsgSocketPath(contact))
+
+def sendSocketIOCli(data: str) -> str:
+    return sendSocketIO(data, buildCliSocketPath())

@@ -1,5 +1,6 @@
 # Interface Data In-Out Transport
 from enum import Enum
+from typing import cast
 import json
 
 class IDIOT_TYPE(Enum):
@@ -9,13 +10,15 @@ class IDIOT_TYPE(Enum):
     PING = 1
     # Send a message
     SEND_MSG = 2
+    # Gets a list of app chats
+    LIST_CHATS = 3
     # Get a chat
-    GET_CHAT = 3
+    GET_MSGS = 4
     # Get contacts
-    GET_CONTACTS = 4
+    GET_CONTACTS = 5
 
 class IDIOT:
-    def __init__(self, type: IDIOT_TYPE, data: object):
+    def __init__(self, type: IDIOT_TYPE, data: str):
         self.type = type
         self.data = data
 
@@ -35,5 +38,5 @@ class IDIOT:
         """
         da: dict[str, object] = json.loads(idiot)
         t: IDIOT_TYPE = IDIOT_TYPE(da["type"])
-        d: object = da["data"]
+        d: str = cast(str, da["data"])
         return IDIOT(t, d)
