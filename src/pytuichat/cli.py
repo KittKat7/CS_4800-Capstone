@@ -80,8 +80,9 @@ def _formatMessage(msg: Message) -> str:
             mStatus = lang.getString("mrkUnread")
         case MessageStatus.READ:
             mStatus = lang.getString("mrkRead")
+    strTime: str = str(msg.getSent().strftime("%Y%m%d %I%M%p"))
 
-    return f"{mStatus} {str(msg.getSent().strftime("%Y%m%d %I%M%p"))} {msg.getSender()}: {msg.getContent()}"
+    return f"{mStatus} {strTime} {msg.getSender()}: {msg.getContent()}"
 
 def getMsgs(id: str, n: int = 1) -> str:
     """
