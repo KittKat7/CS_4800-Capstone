@@ -79,7 +79,7 @@ class Message:
         """
         return self._status
 
-    def copy(self) -> Message:
+    def copy(self) -> 'Message':
         """
         Creates an identical copy of this message.
         """
