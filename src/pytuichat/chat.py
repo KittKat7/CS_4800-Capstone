@@ -51,6 +51,24 @@ class Chat:
         Returns this Chat object's Message history as a list
         """
         return self._history
+    
+    def readMessages(self, number: int, start: int = 0) -> list[Message]:
+        """
+        Returns a list of n messages, starting from m. If any messages are
+        marked as unread, mark them as read.
+        """
+        retVal: list[Message] = []
+        for i in range(start, start+number):
+            # Don't try to read past the end of messages
+            if i >= len(self._history):
+                break
+            m: Message = self._history[i]
+            retVal.append(m.copy())
+            if m.getStatus() == MessageStatus.UNREAD:
+                m.updateStatus(MessageStatus.READ)
+                self._numUnread -= 1
+        
+        return retVal
 
     def toJsonObj(self) -> dict[str, object]:
         """

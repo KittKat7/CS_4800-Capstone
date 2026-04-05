@@ -68,14 +68,27 @@ def _formatMessage(msg: Message) -> str:
     """
     Formats a given message into a readable string.
     """
-    return f"{msg.getStatus().value} {str(msg.getSent().strftime("%Y%m%d %I%M%p"))} {msg.getSender()}: {msg.getContent()}"
+    mStatus: str = ""
+    match msg.getStatus():
+        case MessageStatus.SENDING:
+            mStatus = lang.getString("mrkSending")
+        case MessageStatus.SENT:
+            mStatus = lang.getString("mrkSent")
+        case MessageStatus.TIMEOUT:
+            mStatus = lang.getString("mrkTimout")
+        case MessageStatus.UNREAD:
+            mStatus = lang.getString("mrkUnread")
+        case MessageStatus.READ:
+            mStatus = lang.getString("mrkRead")
+
+    return f"{mStatus} {str(msg.getSent().strftime("%Y%m%d %I%M%p"))} {msg.getSender()}: {msg.getContent()}"
 
 def getMsgs(id: str, n: int = 1) -> str:
     """
     TODO
     """
     response: IDIOT = IDIOT.fromString(
-        socketio.sendSocketIOCli(IDIOT(IDIOT_TYPE.GET_MSGS, json.dumps({"id": id, "n": n})).toString()))
+        socketio.sendSocketIOCli(IDIOT(IDIOT_TYPE.READ_MSGS, json.dumps({"id": id, "n": n})).toString()))
     
     msgStr: str = ""
     for m in json.loads(response.data):

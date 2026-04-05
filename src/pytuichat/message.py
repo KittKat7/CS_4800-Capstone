@@ -78,6 +78,18 @@ class Message:
         Returns the status of the message.
         """
         return self._status
+
+    def copy(self) -> Message:
+        """
+        Creates an identical copy of this message.
+        """
+        m: Message = Message(
+            self._content,
+            self._sender,
+            self._status,
+            self._sent,
+            self._recieved)
+        return m
         
     def toJsonObj(self) -> object:
         """

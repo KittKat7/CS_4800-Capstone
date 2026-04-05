@@ -1,5 +1,10 @@
 
 language: dict[str, str] = {
-    "test": "testing",
     "endReq": "End Request",
+
+    "mrkSending": "📨",
+    "mrkSent": "✅",
+    "mrkTimeout": "❌",
+    "mrkUnread": "📬",
+    "mrkRead": "✅",
 }

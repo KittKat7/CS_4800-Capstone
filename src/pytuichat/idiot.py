@@ -13,7 +13,7 @@ class IDIOT_TYPE(Enum):
     # Gets a list of app chats
     LIST_CHATS = 3
     # Get a chat
-    GET_MSGS = 4
+    READ_MSGS = 4
     # Get contacts
     GET_CONTACTS = 5
 

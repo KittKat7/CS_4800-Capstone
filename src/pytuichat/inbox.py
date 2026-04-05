@@ -321,7 +321,7 @@ class Inbox:
                             IDIOT_TYPE.LIST_CHATS,
                             str(Inbox._chats))
                         connection.sendall(idiotResponse.toString().encode())
-                    case IDIOT_TYPE.GET_MSGS:
+                    case IDIOT_TYPE.READ_MSGS:
                         # Get data from recieved message
                         idata: dict[str, object] = json.loads(idiot.data)
                         id: str = cast(str, idata["id"])
@@ -331,7 +331,7 @@ class Inbox:
                         if not Inbox._chats[id]:
                             history = []
                         else:
-                            history = cast(Chat, Inbox._chats[id]).getMessageHistory()[0:n]
+                            history = cast(Chat, Inbox._chats[id]).readMessages(n)
                         
                         responseJson: list[object] = []
                         for m in history:
