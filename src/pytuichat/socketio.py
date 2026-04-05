@@ -18,7 +18,7 @@ def buildCliSocketPath() -> str:
     Builds and returns a string path to the socket used for cli interactions
     by the user.
     """
-    return FileReader.getConfigDir() + "/pytuichat.sock"
+    return FileReader.getDataDir() + "/pytuichat.sock"
 
 def createSocket(path: str, perms: int) -> socket.socket:
     """
@@ -27,6 +27,10 @@ def createSocket(path: str, perms: int) -> socket.socket:
     """
     if debug.isDebug:
         return socket.socket()
+
+    # Check if socket file exists
+    if not os.path.isfile(path):
+        os.makedirs(os.path.dirname(path), exist_ok=True)
 
     # unlink socket path
     try:
