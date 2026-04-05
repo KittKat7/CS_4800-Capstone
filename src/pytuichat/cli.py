@@ -2,6 +2,7 @@
 import sys
 import os
 import subprocess
+import getpass
 
 from inbox import *
 from filereader import *
@@ -103,7 +104,7 @@ def sendMsg(chatid: str, msg: str) -> str:
     dm: DeliveryMessage = DeliveryMessage(
         Message(
             msg,
-            os.getlogin(),
+            getpass.getuser(),
         ),
         Chat.decodeParticipantID(chatid),
         chatid

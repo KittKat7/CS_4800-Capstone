@@ -1,5 +1,5 @@
 import socket
-import os
+import getpass
 import asyncio
 import threading
 
@@ -111,7 +111,7 @@ class Inbox:
         """
         Creates and returns the Msg socket.
         """
-        socketPath: str = socketio.buildMsgSocketPath(os.getlogin())
+        socketPath: str = socketio.buildMsgSocketPath(getpass.getuser())
         s: socket.socket = socketio.createSocket(socketPath, socketio.MSGPERMS)
         return s
 
