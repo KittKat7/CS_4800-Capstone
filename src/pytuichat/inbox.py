@@ -188,7 +188,7 @@ class Inbox:
 
         sendTo: list[str] = message.getSendingTo()
         for c in sendTo:
-            spit: SPIT = SPIT(SPIT.Type.MESSAGE, json.dumps(message.toJsonObj()))
+            spit: SPIT = SPIT(SPIT.Type.MESSAGE, message.toJsonObj())
 
             responseStr: str
             try:
@@ -212,7 +212,8 @@ class Inbox:
             message.sentTo(c)
         
         if not message.getSendingTo():
-            Inbox._outbox.remove(message)
+            if message in Inbox._outbox:
+                Inbox._outbox.remove(message)
             return True
 
         if message not in Inbox._outbox:
@@ -229,7 +230,7 @@ class Inbox:
 
         try:
             # Wait for in inbound connection
-            connection = Inbox._msgSocket.accept()[1]
+            connection = Inbox._msgSocket.accept()[0]
             print('Connection from', str(connection))
         except:
             return
@@ -284,7 +285,6 @@ class Inbox:
         Basically a while true loop to handle all cli commands.
         """
         while Inbox._isRunning:
-            print("run run run")
             Inbox._handleCliRecieved()
 
     @staticmethod
@@ -293,11 +293,9 @@ class Inbox:
         Waits and handles connections from the CLI.
         """
 
-        print("aaaa")
         # Wait for in inbound connection
         connection = Inbox._cliSocket.accept()[0]
 
-        print("bbbb")
         try:
             print('Connection from', str(connection))
 
@@ -306,6 +304,7 @@ class Inbox:
                 data = connection.recv(1024)
                 if not data:
                     break
+                    
                 
                 dataStr: str = data.decode()
                 idiot: IDIOT = IDIOT.fromString(dataStr)
@@ -320,6 +319,13 @@ class Inbox:
                         idiotResponse: IDIOT = IDIOT(
                             IDIOT_TYPE.LIST_CHATS,
                             str(Inbox._chats))
+                        connection.sendall(idiotResponse.toString().encode())
+                    case IDIOT_TYPE.SEND_MSG:
+                        dm: DeliveryMessage = DeliveryMessage.fromJsonObj(json.loads(idiot.data))
+                        r: bool = Inbox._sendMessage(dm)
+                        idiotResponse: IDIOT = IDIOT(
+                            IDIOT_TYPE.SEND_MSG,
+                            str(r))
                         connection.sendall(idiotResponse.toString().encode())
                     case IDIOT_TYPE.READ_MSGS:
                         # Get data from recieved message

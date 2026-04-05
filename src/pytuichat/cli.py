@@ -96,6 +96,22 @@ def getMsgs(id: str, n: int = 1) -> str:
         msgStr += _formatMessage(Message.fromJsonObj(m)) + "\n"
     return msgStr + lang.getString("endReq")
 
+def sendMsg(chatid: str, msg: str) -> str:
+    """
+    TODO
+    """
+    dm: DeliveryMessage = DeliveryMessage(
+        Message(
+            msg,
+            os.getlogin(),
+        ),
+        Chat.decodeParticipantID(chatid),
+        chatid
+    )
+    response: IDIOT = IDIOT.fromString(
+        socketio.sendSocketIOCli(IDIOT(IDIOT_TYPE.SEND_MSG, json.dumps(dm.toJsonObj())).toString()))
+    return response.data
+
 match args[0]:
     case "start":
         if start():
@@ -113,9 +129,11 @@ match args[0]:
     case "listChats":
         chats = listChats()
         print(chats)
-
     case "getMsgs":
         chat = getMsgs(args[1], int(args[2]))
         print(chat)
+    case "send":
+        tf = sendMsg(args[1], args[2])
+        print("Message send:", tf)
     case _:
         print("UNKNOWN: " + args[0])

@@ -179,6 +179,7 @@ class DeliveryMessage:
         Returns a new DeliveryMessage from a provided json compatable object.
         """
         obj: dict[str, object] = cast(dict[str, object], jsonObj)
+        print("SADSDDWASFF", type(jsonObj), jsonObj)
         dmessage: DeliveryMessage = DeliveryMessage(
             message = Message.fromJsonObj(obj["message"]),
             sendingTo = cast(list[str], obj["sendingTo"]),
