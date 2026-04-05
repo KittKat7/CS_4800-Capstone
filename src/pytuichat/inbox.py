@@ -112,7 +112,8 @@ class Inbox:
         Creates and returns the Msg socket.
         """
         socketPath: str = socketio.buildMsgSocketPath(os.getlogin())
-        return socketio.createSocket(socketPath, socketio.MSGPERMS)
+        s: socket.socket = socketio.createSocket(socketPath, socketio.MSGPERMS)
+        return s
 
     @staticmethod
     def _createCliSocket() -> socket.socket:
@@ -120,7 +121,8 @@ class Inbox:
         Creates and returns the CLI socket.
         """
         socketPath: str = socketio.buildCliSocketPath()
-        return socketio.createSocket(socketPath, socketio.CLIPERMS)
+        s: socket.socket = socketio.createSocket(socketPath, socketio.CLIPERMS)
+        return s
 
     @staticmethod
     def _findOrCreateContact(username: str) -> Contact:
