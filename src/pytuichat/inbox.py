@@ -286,8 +286,11 @@ class Inbox:
         """
         Basically a while true loop to handle all cli commands.
         """
-        while Inbox._isRunning:
-            Inbox._handleCliRecieved()
+        try:
+            while Inbox._isRunning:
+                Inbox._handleCliRecieved()
+        except:
+            Inbox._isRunning = False
 
     @staticmethod
     def _handleCliRecieved() -> None:
@@ -302,57 +305,61 @@ class Inbox:
             print('Connection from', str(connection))
 
             # receive data from the client
+            dataStr: str = ""
             while True:
+                print("hello world")
                 data = connection.recv(1024)
+                print(data)
                 if not data:
                     break
+                dataStr += data.decode()
+                print(dataStr)
+
+            print("doing great things")
+            idiot: IDIOT = IDIOT.fromString(dataStr)
+
+            # Handle the incoming idiot
+            match idiot.type:
+                # When the STOP command is recieved
+                case IDIOT_TYPE.STOP:
+                    Inbox._isRunning = False
+                    raise Exception("Shutting Down!!!")
+                case IDIOT_TYPE.LIST_CHATS:
+                    idiotResponse: IDIOT = IDIOT(
+                        IDIOT_TYPE.LIST_CHATS,
+                        str(Inbox._chats))
+                    connection.sendall(idiotResponse.toString().encode())
+                case IDIOT_TYPE.SEND_MSG:
+                    dm: DeliveryMessage = DeliveryMessage.fromJsonObj(json.loads(idiot.data))
+                    r: bool = Inbox._sendMessage(dm)
+                    idiotResponse: IDIOT = IDIOT(
+                        IDIOT_TYPE.SEND_MSG,
+                        str(r))
+                    connection.sendall(idiotResponse.toString().encode())
+                case IDIOT_TYPE.READ_MSGS:
+                    # Get data from recieved message
+                    idata: dict[str, object] = json.loads(idiot.data)
+                    id: str = cast(str, idata["id"])
+                    n: int = cast(int, idata["n"])
+
+                    history: list[Message]
+                    if not Inbox._chats[id]:
+                        history = []
+                    else:
+                        history = cast(Chat, Inbox._chats[id]).readMessages(n)
                     
-                
-                dataStr: str = data.decode()
-                idiot: IDIOT = IDIOT.fromString(dataStr)
+                    responseJson: list[object] = []
+                    for m in history:
+                        responseJson.append(m.toJsonObj())
+                    # responseStr: str = ""
+                    # for m in history:
+                    #     responseStr += f"{str(m.getSent().strftime("%Y%m%d %I%M%p"))} {m.getSender()}: {m.getContent()}\n"
 
-                # Handle the incoming idiot
-                match idiot.type:
-                    # When the STOP command is recieved
-                    case IDIOT_TYPE.STOP:
-                        Inbox._isRunning = False
-                        raise Exception("Shutting Down!!!")
-                    case IDIOT_TYPE.LIST_CHATS:
-                        idiotResponse: IDIOT = IDIOT(
-                            IDIOT_TYPE.LIST_CHATS,
-                            str(Inbox._chats))
-                        connection.sendall(idiotResponse.toString().encode())
-                    case IDIOT_TYPE.SEND_MSG:
-                        dm: DeliveryMessage = DeliveryMessage.fromJsonObj(json.loads(idiot.data))
-                        r: bool = Inbox._sendMessage(dm)
-                        idiotResponse: IDIOT = IDIOT(
-                            IDIOT_TYPE.SEND_MSG,
-                            str(r))
-                        connection.sendall(idiotResponse.toString().encode())
-                    case IDIOT_TYPE.READ_MSGS:
-                        # Get data from recieved message
-                        idata: dict[str, object] = json.loads(idiot.data)
-                        id: str = cast(str, idata["id"])
-                        n: int = cast(int, idata["n"])
-
-                        history: list[Message]
-                        if not Inbox._chats[id]:
-                            history = []
-                        else:
-                            history = cast(Chat, Inbox._chats[id]).readMessages(n)
-                        
-                        responseJson: list[object] = []
-                        for m in history:
-                            responseJson.append(m.toJsonObj())
-                        # responseStr: str = ""
-                        # for m in history:
-                        #     responseStr += f"{str(m.getSent().strftime("%Y%m%d %I%M%p"))} {m.getSender()}: {m.getContent()}\n"
-
-                        idiotResponse: IDIOT = IDIOT(
-                            IDIOT_TYPE.LIST_CHATS, json.dumps(responseJson))
-                        connection.sendall(idiotResponse.toString().encode())
-                    case _:
-                        raise Exception("OH NO")
+                    idiotResponse: IDIOT = IDIOT(
+                        IDIOT_TYPE.LIST_CHATS, json.dumps(responseJson))
+                    connection.sendall(idiotResponse.toString().encode())
+                case _:
+                    raise Exception("OH NO")
 
         finally:
             # close the connection
@@ -377,25 +384,28 @@ class Inbox:
 
         time: int = 0
         
-        while Inbox._isRunning:
-            print("beat")
-            await asyncio.sleep(1)
+        try:
+            while Inbox._isRunning:
+                print("beat")
+                await asyncio.sleep(1)
 
-            # Handle resent heartbeat
-            if time % RESEND_TIME == 0:
-                # TODO resend things
-                Inbox._sendAllMessages()
+                # Handle resent heartbeat
+                if time % RESEND_TIME == 0:
+                    # TODO resend things
+                    Inbox._sendAllMessages()
 
-            # Handle check inbox timeout
-            if time % CHECK_INBOX_TIME == 0:
-                # TODO check inbox
-                Inbox._handleMsgConnect()
+                # Handle check inbox timeout
+                if time % CHECK_INBOX_TIME == 0:
+                    # TODO check inbox
+                    Inbox._handleMsgConnect()
 
-            # If time passes MAX_TIME reset the time to 0
-            if time >= MAX_TIME:
-                time = MAX_LOWER
-            # Increment the time
-            time += 1
+                # If time passes MAX_TIME reset the time to 0
+                if time >= MAX_TIME:
+                    time = MAX_LOWER
+                # Increment the time
+                time += 1
+        except:
+            Inbox._isRunning = False
 
 
 

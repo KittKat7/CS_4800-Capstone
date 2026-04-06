@@ -14,9 +14,42 @@ class STUPID:
     STR_ENCODE = "utf-8"
 
     def __init__(self, seg: c_uint16, tseg: c_uint16, data: bytes):
-        self.segments: c_uint16 = seg
+        self.segment: c_uint16 = seg
         self.totalSegments: c_uint16 = tseg
         self.data: bytes = data
+
+    def getSeg(self) -> int:
+        """
+        Returns the segment number as an int.
+        """
+        return self.segment.value
+
+    def getTotalSeg(self) -> int:
+        """
+        Returns the total segments as an int.
+        """
+        return self.totalSegments.value
+
+    def toBytes(self) -> bytes:
+        """
+        Turn the STUPID into PACKET_SIZE bytes.
+        """
+        return b''.join([
+            self.segment.value.to_bytes(2),
+            self.totalSegments.value.to_bytes(2),
+            self.data
+            ])
+
+    @staticmethod
+    def fromBytes(data: bytes) -> STUPID:
+        """
+        Takes a list of bytes and turns it into a STUPID object.
+        """
+        return STUPID(
+            c_uint16(int.from_bytes(data[0:2])),
+            c_uint16(int.from_bytes(data[2:4])),
+            data[4:STUPID.PACKET_SIZE]
+        )
 
     @staticmethod
     def encodeStupid(data: str) -> list[STUPID]:

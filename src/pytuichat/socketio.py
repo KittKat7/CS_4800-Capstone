@@ -1,6 +1,7 @@
 import os, socket
 import debug
 from filereader import FileReader
+from stupid import STUPID
 
 # 0o prefix denotes octal
 MSGPERMS: int = 0o666
@@ -45,40 +46,47 @@ def createSocket(path: str, perms: int) -> socket.socket:
     os.chmod(path, perms)
     return msgSocket
 
-def sendSocketIO(data: str, socket_path: str) -> str:
+def sendSocketIO(data: str, socket_path: str) -> None:
     """
     Sends a message to a socket, throws an exception if sending fails, otherwise
     returns the recieved message back.
     """
     # TODO add to queue
     if debug.isDebug:
-        return ""
+        return
+
+    sl: list[STUPID] = STUPID.encodeStupid(data)
+    byteData: list[bytes] = [t.toBytes() for t in sl]
 
     # Create the Unix socket client
     client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
 
-    response: str = ""
+    # Connect to the server
+    # If it fails, return false
+    client.connect(socket_path)
 
-    try:
-        # Connect to the server
-        # If it fails, return false
-        client.connect(socket_path)
+    # Send all packets to server (as bytes)
+    for p in byteData:
+        client.sendall(p)
 
-        # Send a message to the server
-        client.sendall(data.encode())
+def recieveSocketIO(socket: socket.socket) -> str:
+    """
+    Recieve data from a socket.
+    """
+    recievingData: bool = True
 
-        # Receive a response from the server
-        response = client.recv(1024).decode()
-    except:
-        client.close()
-        raise Exception("Failed to send")
-    finally:
-        # Close the connection
-        client.close()
-    return response
+    pl: list[STUPID] = []
+    while recievingData:
+        pb: bytes = socket.recv(STUPID.PACKET_SIZE)
+        p: STUPID = STUPID.fromBytes(pb)
+        pl.append(p)
+        if p.getSeg() >= p.getTotalSeg():
+            recievingData = False
+    
+    return STUPID.decodeStupid(pl)
 
-def sendSocketIOMsg(data: str, contact: str) -> str:
+def sendSocketIOMsg(data: str, contact: str) -> None:
     return sendSocketIO(data, buildMsgSocketPath(contact))
 
-def sendSocketIOCli(data: str) -> str:
+def sendSocketIOCli(data: str) -> None:
     return sendSocketIO(data, buildCliSocketPath())

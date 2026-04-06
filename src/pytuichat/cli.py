@@ -89,8 +89,9 @@ def getMsgs(id: str, n: int = 1) -> str:
     """
     TODO
     """
-    response: IDIOT = IDIOT.fromString(
-        socketio.sendSocketIOCli(IDIOT(IDIOT_TYPE.READ_MSGS, json.dumps({"id": id, "n": n})).toString()))
+    responset = socketio.sendSocketIOCli(IDIOT(IDIOT_TYPE.READ_MSGS, json.dumps({"id": id, "n": n})).toString())
+    print(responset)
+    response: IDIOT = IDIOT.fromString(responset)
     
     msgStr: str = ""
     for m in json.loads(response.data):
@@ -130,7 +131,7 @@ match args[0]:
     case "listChats":
         chats = listChats()
         print(chats)
-    case "getMsgs":
+    case "read":
         chat = getMsgs(args[1], int(args[2]))
         print(chat)
     case "send":
