@@ -61,7 +61,6 @@ def sendSocketIO(client: socket.socket, data: str):
 
     # Send all packets to server (as bytes)
     for p in byteData:
-        print("sending!")
         client.sendall(p)
 
 def recieveSocketIO(socket: socket.socket) -> str:
@@ -70,29 +69,42 @@ def recieveSocketIO(socket: socket.socket) -> str:
     """
     recievingData: bool = True
 
-    pl: list[STUPID] = []
+    plist: list[STUPID] = []
     while recievingData:
-        print("...ing")
-        socket.recv
-        pb: bytes = socket.recv(STUPID.PACKET_SIZE)
-        p: STUPID = STUPID.fromBytes(pb)
-        pl.append(p)
-        print(p.getSeg(), p.getTotalSeg())
-        if p.getSeg() >= p.getTotalSeg():
-            print("TRUE")
+
+        # Recieve the packet length in bytes
+        plenb: bytes = socket.recv(STUPID.LEN_BYTES)
+        plen: int = int.from_bytes(plenb) - STUPID.LEN_BYTES
+
+        # If a negative length, then stop recieving
+        if not plenb:
             recievingData = False
-    
-    return STUPID.decodeStupid(pl)
+            continue
+
+        # Recieve the rest of the packet
+        pbytes: bytes = socket.recv(plen)
+
+        # Make the packet object and add to list
+        p: STUPID = STUPID.fromBytes(plenb + pbytes)
+        plist.append(p)
+
+        # If its the last segment, stop recieving
+        if p.isLastSeg():
+            recievingData = False
+
+        if p.getLastSeg() == -1:
+            raise Exception("TODO") # TODO
+
+    return STUPID.decodeStupid(plist)
 
 def createMessageClient(contact: str) -> socket.socket:
-    print("11")
+    """
+    Creates a socket client to send messages. If it fails, an error will be
+    thrown.
+    """
     path: str = buildMsgSocketPath(contact)
-    print("12")
     client: socket.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-    print("13")
-    client.setblocking(False)
     client.connect(path)
-    print("14")
     return client
 
 def createCliClient() -> socket.socket:
@@ -105,4 +117,6 @@ def singleCliCommand(idiot: IDIOT) -> IDIOT:
     client: socket.socket = createCliClient()
     sendSocketIO(client, idiot.toString())
 
-    return IDIOT.fromString(recieveSocketIO(client))
+    strt: str = recieveSocketIO(client)
+
+    return IDIOT.fromString(strt)

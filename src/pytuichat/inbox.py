@@ -88,21 +88,19 @@ class Inbox:
         if debug.isDebug:
             return True
 
-        socket_path = socketio.buildMsgSocketPath(contact.getUsername())
-        client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         try:
-            client.connect(socket_path)
+            client: socket.socket = socketio.createMessageClient(contact.getUsername())
         except:
             return False
 
         spit: SPIT = SPIT(SPIT.Type.PING, "")
 
         # Send a message to the server
-        client.sendall(spit.toString().encode())
+        socketio.sendSocketIO(client, spit.toString())
 
         # Receive a response from the server
-        response = client.recv(1024)
-        print(f'Ping response: {response.decode()}')
+        response: str = socketio.recieveSocketIO(client)
+        print(f'Ping response: {response}')
         client.close()
         return True
 
@@ -168,22 +166,18 @@ class Inbox:
         """
         Tries to send all messages in the outbox.
         """
-        print("w")
         outboxLength: int = len(Inbox._outbox)
         updatePersist: bool = False
         if len(Inbox._outbox) != outboxLength:
             updatePersist = True
 
-        print("x")
         for dm in Inbox._outbox:
             if Inbox._sendMessage(dm):
                 updatePersist = True
 
-        print("y")
         if updatePersist:
             FileReader.updateUnsentList(Inbox._outbox)
             updatePersist = False
-        print("z")
 
     @staticmethod
     def _sendMessage(message: DeliveryMessage) -> bool:
@@ -191,25 +185,18 @@ class Inbox:
         Sends a message by adding it to the outbox. The message send loop will
         send the message to contacts when possible.
         """
-        print("sen")
-
         sendTo: list[str] = message.getSendingTo()
         for c in sendTo:
-            print("a")
             spit: SPIT = SPIT(SPIT.Type.MESSAGE, message.toJsonObj())
-            print("b")
 
-            client: socket.socket = socketio.createMessageClient(c)
-            print("sendmsg")
             try:
+                client: socket.socket = socketio.createMessageClient(c)
                 socketio.sendSocketIO(client, spit.toString())
             except:
                 return False
 
-            print("recmsg")
             responseStr: str = socketio.recieveSocketIO(client)
 
-            print("close")
             client.close()
 
             try:
@@ -253,32 +240,24 @@ class Inbox:
 
         try:
             # receive data from the client
-            while Inbox._isRunning:
-                data = connection.recv(1024)
-                if not data:
-                    break
-                
-                dataStr: str = data.decode()
-                spit: SPIT = SPIT.fromString(dataStr)
+            dataStr: str = socketio.recieveSocketIO(connection)
 
-                # Handle type of SPIT
-                
-                response: object
+            spit: SPIT = SPIT.fromString(dataStr)
 
-                match spit.type:
-                    case SPIT.Type.PING:
-                        response = SPIT.Status.OK
-                    case SPIT.Type.MESSAGE:
-                        dmessage: DeliveryMessage = DeliveryMessage.fromJsonObj(
-                            spit.data)
-                        Inbox._recievedMessage(dmessage)
-                        response = SPIT.Status.OK
-                    case _:
-                        raise Exception("OH NO")
+            match spit.type:
+                case SPIT.Type.PING:
+                    response = SPIT.Status.OK
+                case SPIT.Type.MESSAGE:
+                    dmessage: DeliveryMessage = DeliveryMessage.fromJsonObj(
+                        spit.data)
+                    Inbox._recievedMessage(dmessage)
+                    response = SPIT.Status.OK
+                case _:
+                    raise Exception("OH NO")
 
-                # Send a response back to the client
-                spitResponse: SPIT = SPIT(SPIT.Type.STATUS, response)
-                connection.sendall(spitResponse.toString().encode())
+            # Send a response back to the client
+            spitResponse: SPIT = SPIT(SPIT.Type.STATUS, response)
+            socketio.sendSocketIO(connection, spitResponse.toString())
         finally:
             # close the connection
             connection.close()
@@ -314,16 +293,14 @@ class Inbox:
 
         # Wait for in inbound connection
         connection = Inbox._cliSocket.accept()[0]
+        print('Connection from', str(connection))
 
         try:
-            print('Connection from', str(connection))
 
             # receive data from the client
             dataStr: str = socketio.recieveSocketIO(connection)
-            print("RECIEVED")
             print(dataStr)
 
-            print("doing great things")
             idiot: IDIOT = IDIOT.fromString(dataStr)
 
             # Handle the incoming idiot
@@ -336,14 +313,14 @@ class Inbox:
                     idiotResponse: IDIOT = IDIOT(
                         IDIOT_TYPE.LIST_CHATS,
                         str(Inbox._chats))
-                    connection.sendall(idiotResponse.toString().encode())
+                    socketio.sendSocketIO(connection, idiotResponse.toString())
                 case IDIOT_TYPE.SEND_MSG:
                     dm: DeliveryMessage = DeliveryMessage.fromJsonObj(json.loads(idiot.data))
                     r: bool = Inbox._sendMessage(dm)
                     idiotResponse: IDIOT = IDIOT(
                         IDIOT_TYPE.SEND_MSG,
                         str(r))
-                    connection.sendall(idiotResponse.toString().encode())
+                    socketio.sendSocketIO(connection, idiotResponse.toString())
                 case IDIOT_TYPE.READ_MSGS:
                     # Get data from recieved message
                     idata: dict[str, object] = json.loads(idiot.data)
@@ -365,7 +342,7 @@ class Inbox:
 
                     idiotResponse: IDIOT = IDIOT(
                         IDIOT_TYPE.LIST_CHATS, json.dumps(responseJson))
-                    connection.sendall(idiotResponse.toString().encode())
+                    socketio.sendSocketIO(connection, idiotResponse.toString())
                 case _:
                     raise Exception("OH NO")
 
@@ -394,28 +371,23 @@ class Inbox:
         
         try:
             while Inbox._isRunning:
-                print("beat")
                 await asyncio.sleep(1)
 
-                print("b1")
                 # Handle resent heartbeat
                 if time % RESEND_TIME == 0:
                     # TODO resend things
                     Inbox._sendAllMessages()
 
-                print("b2")
                 # Handle check inbox timeout
                 if time % CHECK_INBOX_TIME == 0:
                     # TODO check inbox
                     Inbox._handleMsgConnect()
 
-                print("b3")
                 # If time passes MAX_TIME reset the time to 0
                 if time >= MAX_TIME:
                     time = MAX_LOWER
                 # Increment the time
                 time += 1
-                print("b4")
         except:
             Inbox._isRunning = False
 

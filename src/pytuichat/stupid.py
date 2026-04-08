@@ -1,4 +1,3 @@
-from ctypes import c_uint16
 
 class STUPID:
     """
@@ -7,48 +6,60 @@ class STUPID:
     data is too long, it will need to be split into multiple packets.
     """
 
-    MAX_DATA_SIZE = 8 * pow(2, 20)
-    PACKET_SIZE = 1024
-    PACKET_DATA_SIZE = 1020
+    LEN_BYTES:        int = 2
+    MAX_DATA_SIZE:    int = 8 * pow(2, 20)
+    PACKET_SIZE:      int = 1024
+    PACKET_DATA_SIZE: int = 1018
 
     STR_ENCODE = "utf-8"
 
-    def __init__(self, seg: c_uint16, tseg: c_uint16, data: bytes):
-        self.segment: c_uint16 = seg
-        self.totalSegments: c_uint16 = tseg
+    def __init__(self, lng: int, seg: int, tseg: int, data: bytes):
+        self.length: int = lng
+        self.segment: int = seg
+        self.totalSegments: int = tseg
         self.data: bytes = data
 
     def getSeg(self) -> int:
         """
         Returns the segment number as an int.
         """
-        return self.segment.value
+        return self.segment
 
-    def getTotalSeg(self) -> int:
+    def getLastSeg(self) -> int:
         """
         Returns the total segments as an int.
         """
-        return self.totalSegments.value
+        return self.totalSegments - 1
+
+    def isLastSeg(self) -> bool:
+        """
+        Returns true if this is the last segment.
+        """
+        return self.segment == self.totalSegments - 1
 
     def toBytes(self) -> bytes:
         """
         Turn the STUPID into PACKET_SIZE bytes.
         """
         return b''.join([
-            self.segment.value.to_bytes(2),
-            self.totalSegments.value.to_bytes(2),
+            self.length.to_bytes(2),
+            self.segment.to_bytes(2),
+            self.totalSegments.to_bytes(2),
             self.data
-            ])
+        ])
+
 
     @staticmethod
     def fromBytes(data: bytes) -> STUPID:
         """
         Takes a list of bytes and turns it into a STUPID object.
         """
+        length = int.from_bytes(data[0:2])
         return STUPID(
-            c_uint16(int.from_bytes(data[0:2])),
-            c_uint16(int.from_bytes(data[2:4])),
-            data[4:STUPID.PACKET_SIZE]
+            length,
+            int.from_bytes(data[2:4]),
+            int.from_bytes(data[4:6]),
+            data[6:length]
         )
 
     @staticmethod
@@ -62,16 +73,18 @@ class STUPID:
         if strByteLength > STUPID.MAX_DATA_SIZE:
             raise Exception("TOO MUCH DATA (over 8MiB)")
         
-        numOfPackets: c_uint16 = c_uint16(int(strByteLength / STUPID.PACKET_DATA_SIZE) + 1)
+        numOfPackets: int = int(int(strByteLength / STUPID.PACKET_DATA_SIZE) + 1)
 
         packetList: list[STUPID] = []
 
-        for i in range(numOfPackets.value):
+        for i in range(numOfPackets):
+            pdata = dataB[i * STUPID.PACKET_DATA_SIZE : (i + 1) * STUPID.PACKET_DATA_SIZE]
             packetList.append(
                 STUPID(
-                    seg  = c_uint16(i),
+                    lng  = int(len(pdata) + 6),
+                    seg  = int(i),
                     tseg = numOfPackets,
-                    data = dataB[i * STUPID.PACKET_DATA_SIZE : (i + 1) * STUPID.PACKET_DATA_SIZE]
+                    data = pdata
                 )
             )
         

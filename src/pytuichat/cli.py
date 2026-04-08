@@ -47,12 +47,9 @@ def stop() -> bool:
     """
     Returns true if able to ping the socket for the inbox
     """
-    # Connect to the contacts server if possible
-    socket_path = socketio.buildCliSocketPath()
-    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
     try:
-        client.connect(socket_path)
-        client.sendall(IDIOT(IDIOT_TYPE.STOP, "").toString().encode())
+        client: socket.socket = socketio.createCliClient()
+        socketio.sendSocketIO(client, IDIOT(IDIOT_TYPE.STOP, "").toString())
         client.close()
         return True
     except Exception:
