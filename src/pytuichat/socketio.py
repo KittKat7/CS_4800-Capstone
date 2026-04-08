@@ -2,6 +2,7 @@ import os, socket
 import debug
 from filereader import FileReader
 from stupid import STUPID
+from idiot import IDIOT
 
 # 0o prefix denotes octal
 MSGPERMS: int = 0o666
@@ -46,7 +47,7 @@ def createSocket(path: str, perms: int) -> socket.socket:
     os.chmod(path, perms)
     return msgSocket
 
-def sendSocketIO(data: str, socket_path: str) -> None:
+def sendSocketIO(client: socket.socket, data: str):
     """
     Sends a message to a socket, throws an exception if sending fails, otherwise
     returns the recieved message back.
@@ -58,15 +59,9 @@ def sendSocketIO(data: str, socket_path: str) -> None:
     sl: list[STUPID] = STUPID.encodeStupid(data)
     byteData: list[bytes] = [t.toBytes() for t in sl]
 
-    # Create the Unix socket client
-    client = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
-
-    # Connect to the server
-    # If it fails, return false
-    client.connect(socket_path)
-
     # Send all packets to server (as bytes)
     for p in byteData:
+        print("sending!")
         client.sendall(p)
 
 def recieveSocketIO(socket: socket.socket) -> str:
@@ -77,16 +72,37 @@ def recieveSocketIO(socket: socket.socket) -> str:
 
     pl: list[STUPID] = []
     while recievingData:
+        print("...ing")
+        socket.recv
         pb: bytes = socket.recv(STUPID.PACKET_SIZE)
         p: STUPID = STUPID.fromBytes(pb)
         pl.append(p)
+        print(p.getSeg(), p.getTotalSeg())
         if p.getSeg() >= p.getTotalSeg():
+            print("TRUE")
             recievingData = False
     
     return STUPID.decodeStupid(pl)
 
-def sendSocketIOMsg(data: str, contact: str) -> None:
-    return sendSocketIO(data, buildMsgSocketPath(contact))
+def createMessageClient(contact: str) -> socket.socket:
+    print("11")
+    path: str = buildMsgSocketPath(contact)
+    print("12")
+    client: socket.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    print("13")
+    client.setblocking(False)
+    client.connect(path)
+    print("14")
+    return client
 
-def sendSocketIOCli(data: str) -> None:
-    return sendSocketIO(data, buildCliSocketPath())
+def createCliClient() -> socket.socket:
+    path: str = buildCliSocketPath()
+    client: socket.socket = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
+    client.connect(path)
+    return client
+
+def singleCliCommand(idiot: IDIOT) -> IDIOT:
+    client: socket.socket = createCliClient()
+    sendSocketIO(client, idiot.toString())
+
+    return IDIOT.fromString(recieveSocketIO(client))

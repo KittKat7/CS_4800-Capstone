@@ -7,6 +7,7 @@ import getpass
 from inbox import *
 from filereader import *
 import lang
+from socketio import singleCliCommand
 
 args = sys.argv[1:]
 
@@ -61,8 +62,7 @@ def listChats():
     """
     Returns a list of chats and info about the chats.
     """
-    response: IDIOT = IDIOT.fromString(
-        socketio.sendSocketIOCli(IDIOT(IDIOT_TYPE.LIST_CHATS, "").toString()))
+    response: IDIOT = singleCliCommand(IDIOT(IDIOT_TYPE.LIST_CHATS, ""))
     return response.data
 
 def _formatMessage(msg: Message) -> str:
@@ -89,9 +89,7 @@ def getMsgs(id: str, n: int = 1) -> str:
     """
     TODO
     """
-    responset = socketio.sendSocketIOCli(IDIOT(IDIOT_TYPE.READ_MSGS, json.dumps({"id": id, "n": n})).toString())
-    print(responset)
-    response: IDIOT = IDIOT.fromString(responset)
+    response: IDIOT = singleCliCommand(IDIOT(IDIOT_TYPE.READ_MSGS, json.dumps({"id": id, "n": n})))
     
     msgStr: str = ""
     for m in json.loads(response.data):
@@ -110,8 +108,7 @@ def sendMsg(chatid: str, msg: str) -> str:
         Chat.decodeParticipantID(chatid),
         chatid
     )
-    response: IDIOT = IDIOT.fromString(
-        socketio.sendSocketIOCli(IDIOT(IDIOT_TYPE.SEND_MSG, json.dumps(dm.toJsonObj())).toString()))
+    response: IDIOT = singleCliCommand(IDIOT(IDIOT_TYPE.SEND_MSG, json.dumps(dm.toJsonObj())))
     return response.data
 
 match args[0]:

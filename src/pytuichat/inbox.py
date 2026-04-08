@@ -168,18 +168,22 @@ class Inbox:
         """
         Tries to send all messages in the outbox.
         """
+        print("w")
         outboxLength: int = len(Inbox._outbox)
         updatePersist: bool = False
         if len(Inbox._outbox) != outboxLength:
             updatePersist = True
 
+        print("x")
         for dm in Inbox._outbox:
             if Inbox._sendMessage(dm):
                 updatePersist = True
 
+        print("y")
         if updatePersist:
             FileReader.updateUnsentList(Inbox._outbox)
             updatePersist = False
+        print("z")
 
     @staticmethod
     def _sendMessage(message: DeliveryMessage) -> bool:
@@ -187,16 +191,26 @@ class Inbox:
         Sends a message by adding it to the outbox. The message send loop will
         send the message to contacts when possible.
         """
+        print("sen")
 
         sendTo: list[str] = message.getSendingTo()
         for c in sendTo:
+            print("a")
             spit: SPIT = SPIT(SPIT.Type.MESSAGE, message.toJsonObj())
+            print("b")
 
-            responseStr: str
+            client: socket.socket = socketio.createMessageClient(c)
+            print("sendmsg")
             try:
-                responseStr = socketio.sendSocketIOMsg(spit.toString(), c)
+                socketio.sendSocketIO(client, spit.toString())
             except:
-                continue
+                return False
+
+            print("recmsg")
+            responseStr: str = socketio.recieveSocketIO(client)
+
+            print("close")
+            client.close()
 
             try:
                 # Receive a response from the server
@@ -305,15 +319,9 @@ class Inbox:
             print('Connection from', str(connection))
 
             # receive data from the client
-            dataStr: str = ""
-            while True:
-                print("hello world")
-                data = connection.recv(1024)
-                print(data)
-                if not data:
-                    break
-                dataStr += data.decode()
-                print(dataStr)
+            dataStr: str = socketio.recieveSocketIO(connection)
+            print("RECIEVED")
+            print(dataStr)
 
             print("doing great things")
             idiot: IDIOT = IDIOT.fromString(dataStr)
@@ -389,21 +397,25 @@ class Inbox:
                 print("beat")
                 await asyncio.sleep(1)
 
+                print("b1")
                 # Handle resent heartbeat
                 if time % RESEND_TIME == 0:
                     # TODO resend things
                     Inbox._sendAllMessages()
 
+                print("b2")
                 # Handle check inbox timeout
                 if time % CHECK_INBOX_TIME == 0:
                     # TODO check inbox
                     Inbox._handleMsgConnect()
 
+                print("b3")
                 # If time passes MAX_TIME reset the time to 0
                 if time >= MAX_TIME:
                     time = MAX_LOWER
                 # Increment the time
                 time += 1
+                print("b4")
         except:
             Inbox._isRunning = False
 
