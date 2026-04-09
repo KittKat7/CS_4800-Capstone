@@ -1,3 +1,5 @@
+from typing import cast
+
 from textual.app import App, ComposeResult
 from textual.widgets import Label, Input, TextArea, Button, Footer, Header
 from textual.containers import Horizontal, Vertical
@@ -65,6 +67,8 @@ And when it has gone past, I will turn the inner eye to see its path.
 Where the fear has gone there will be nothing. Only I will remain.
 """
 
+activeChat: str = ""
+
 class DashboardScreen(Screen):
     """
     The home screen when the app launches. Allows navigation to chats, help
@@ -82,13 +86,24 @@ class DashboardScreen(Screen):
         yield Header()
         chts: list[Chat] = cli.listChats()
         yield Vertical(
-            *[Button(f"{c.getUniqueID()} - {c.getNumUnread()}🔔", classes="chatbtn", compact=True) for c in chts]
+            *[
+                Button(
+                    f"{c.getUniqueID()} - {c.getNumUnread()}🔔",
+                    name=c.getUniqueID(),
+                    classes="chatbtn",
+                    compact=True,
+                    # action="push_screen(\"HelpScreen()\")",
+                )
+                for c in chts
+            ]
         )
         yield Footer()
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "btnExit":
-            self.exit(str(event.button))
+        if "chatbtn" in event.button.classes:
+            global activeChat
+            activeChat = cast(str, event.button.name)
+            self.app.push_screen(MessageScreen())
 
 class MessageScreen(Screen):
 
@@ -96,21 +111,13 @@ class MessageScreen(Screen):
         """
         Compose the page.
         """
-        yield Horizontal(
-            Button(lang.getString("btnBack"), compact=True),
-            Button(lang.getString("btnExit"), compact=True, id="btnExit"),
-            id="nav"
-        )
-        yield TextArea(cli.getMsgs("kittkat", 10), id="content", read_only=True)
+        yield Header()
+        yield TextArea(cli.getMsgs(activeChat, 10), id="content", read_only=True)
         yield Input(placeholder="Type something here...", id="input")
+        yield Footer()
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
         """Handle input when the user presses Enter."""
-
-    def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.id == "btnExit":
-            """
-            """
 
 class HelpScreen(Screen):
     """
@@ -137,22 +144,26 @@ class ModesApp(App[None]):
     """
 
     BINDINGS = [
-        ("^q", "exit()", "Exit"),
+        ("ctrl+q", "quit", "quit"),
+        ("ctrl+b", "back", "Back"),
         ("d", "switch_mode('dashboard')", "Dashboard"),
         ("h", "switch_mode('help')", "Help"),
     ]
 
     MODES = { #type: ignore
         "dashboard": DashboardScreen,
-        # "settings": SettingsScreen,
         "help": HelpScreen,
     }
+
+    async def action_back(self) -> None:
+        if len(self.screen_stack) > 1:
+            self.pop_screen()
 
     def on_mount(self) -> None:
         # self.switch_mode("dashboard")
         self.title = lang.getString("lblTitle")
         self.sub_title = lang.getString("lblSubTitle")
-        self.push_screen(DashboardScreen())
+        self.switch_mode("dashboard")
 
 if __name__ == "__main__":
     app = ModesApp()
