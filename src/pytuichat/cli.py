@@ -108,28 +108,29 @@ def sendMsg(chatid: str, msg: str) -> str:
     response: IDIOT = singleCliCommand(IDIOT(IDIOT_TYPE.SEND_MSG, json.dumps(dm.toJsonObj())))
     return response.data
 
-match args[0]:
-    case "start":
-        if start():
-            print("Inbox has started")
-        else:
-            print("Inbox failed to start")
-    case "ping":
-        if ping():
-            print("Inbox is running")
-        else:
-            print("Inbox is NOT running")
-    case "stop":
-        stop()
-        print("Inbox has stopped")
-    case "listChats":
-        chats = listChats()
-        print(chats)
-    case "read":
-        chat = getMsgs(args[1], int(args[2]))
-        print(chat)
-    case "send":
-        tf = sendMsg(args[1], args[2])
-        print("Message send:", tf)
-    case _:
-        print("UNKNOWN: " + args[0])
+if __name__ == "__main__":
+    match args[0]:
+        case "start":
+            if start():
+                print("Inbox has started")
+            else:
+                print("Inbox failed to start")
+        case "ping":
+            if ping():
+                print("Inbox is running")
+            else:
+                print("Inbox is NOT running")
+        case "stop":
+            stop()
+            print("Inbox has stopped")
+        case "listChats":
+            chats = listChats()
+            print(chats)
+        case "read":
+            chat = getMsgs(args[1], int(args[2]))
+            print(chat)
+        case "send":
+            tf = sendMsg(args[1], args[2])
+            print("Message send:", tf)
+        case _:
+            print("UNKNOWN: " + args[0])

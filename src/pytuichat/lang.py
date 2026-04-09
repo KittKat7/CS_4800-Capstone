@@ -29,6 +29,6 @@ def getString(key: str) -> str:
         raise Exception("Language Map not set!")
     
     if key in LangMap.langMap.keys():
-        return LangMap.langMap[key]
+        return " ".join(LangMap.langMap[key].split())
     else:
         raise Exception("Failed to find string!")
