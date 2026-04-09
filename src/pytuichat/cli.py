@@ -55,12 +55,12 @@ def stop() -> bool:
     except Exception:
         return False
 
-def listChats():
+def listChats() -> list[Chat]:
     """
     Returns a list of chats and info about the chats.
     """
     response: IDIOT = singleCliCommand(IDIOT(IDIOT_TYPE.LIST_CHATS, ""))
-    return response.data
+    return [Chat.fromJsonObj(t) for t in json.loads(response.data)]
 
 def _formatMessage(msg: Message) -> str:
     """
@@ -123,7 +123,7 @@ if __name__ == "__main__":
         case "stop":
             stop()
             print("Inbox has stopped")
-        case "listChats":
+        case "list":
             chats = listChats()
             print(chats)
         case "read":

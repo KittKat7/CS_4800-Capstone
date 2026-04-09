@@ -24,7 +24,7 @@ class Inbox:
 
     # Fields
     _contacts: dict[str, Contact]
-    _chats: dict[str, Chat|None]
+    _chats: dict[str, Chat]
     _outbox: list[DeliveryMessage]
 
     # _operationQueue: list[_InboxOperation] = []
@@ -146,9 +146,7 @@ class Inbox:
         """
         # Try to find existing chat, if found, return it
         if chatID in Inbox._chats:
-            if Inbox._chats[chatID] is None:
-                Inbox._chats[chatID] = FileReader.getChat(chatID)
-            return cast(Chat, Inbox._chats[chatID])
+            return Inbox._chats[chatID]
 
         # TODO optimize
         # No chat was found, create a new one and add it to the list
@@ -309,11 +307,13 @@ class Inbox:
                 case IDIOT_TYPE.STOP:
                     Inbox._isRunning = False
                     raise Exception("Shutting Down!!!")
+
                 case IDIOT_TYPE.LIST_CHATS:
                     idiotResponse: IDIOT = IDIOT(
                         IDIOT_TYPE.LIST_CHATS,
-                        str(Inbox._chats))
+                        json.dumps([Inbox._chats[t].getHeaderJsonObj() for t in Inbox._chats]))
                     socketio.sendSocketIO(connection, idiotResponse.toString())
+
                 case IDIOT_TYPE.SEND_MSG:
                     dm: DeliveryMessage = DeliveryMessage.fromJsonObj(json.loads(idiot.data))
                     r: bool = Inbox._sendMessage(dm)
@@ -321,6 +321,7 @@ class Inbox:
                         IDIOT_TYPE.SEND_MSG,
                         str(r))
                     socketio.sendSocketIO(connection, idiotResponse.toString())
+
                 case IDIOT_TYPE.READ_MSGS:
                     # Get data from recieved message
                     idata: dict[str, object] = json.loads(idiot.data)
@@ -331,7 +332,7 @@ class Inbox:
                     if not Inbox._chats[id]:
                         history = []
                     else:
-                        history = cast(Chat, Inbox._chats[id]).readMessages(n)
+                        history = Inbox._chats[id].readMessages(n)
                     
                     responseJson: list[object] = []
                     for m in history:
@@ -343,6 +344,7 @@ class Inbox:
                     idiotResponse: IDIOT = IDIOT(
                         IDIOT_TYPE.LIST_CHATS, json.dumps(responseJson))
                     socketio.sendSocketIO(connection, idiotResponse.toString())
+
                 case _:
                     raise Exception("OH NO")
 

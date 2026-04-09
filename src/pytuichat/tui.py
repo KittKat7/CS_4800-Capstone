@@ -1,10 +1,11 @@
 from textual.app import App, ComposeResult
 from textual.widgets import Label, Input, TextArea, Button, Footer, Header
-from textual.containers import Horizontal
+from textual.containers import Horizontal, Vertical
 from textual.screen import Screen
 
 import lang
 import cli
+from chat import Chat
 
 lang.setLangMap("en_us")
 
@@ -70,15 +71,18 @@ class DashboardScreen(Screen):
     pages, and settings.
     """
 
+    CSS = """
+    .chatbtn { width: 100%; text-align: left; }
+    """
+
     def compose(self) -> ComposeResult:
         """
         Compose the page.
         """
         yield Header()
-        yield Horizontal(
-            Button(lang.getString("btnExit"), compact=True, id="btnExit"),
-            Label(lang.getString("lblTitle")),
-            id="nav"
+        chts: list[Chat] = cli.listChats()
+        yield Vertical(
+            *[Button(f"{c.getUniqueID()} - {c.getNumUnread()}🔔", classes="chatbtn", compact=True) for c in chts]
         )
         yield Footer()
 
@@ -133,8 +137,8 @@ class ModesApp(App[None]):
     """
 
     BINDINGS = [
+        ("^q", "exit()", "Exit"),
         ("d", "switch_mode('dashboard')", "Dashboard"),
-        ("s", "switch_mode('settings')", "Settings"),
         ("h", "switch_mode('help')", "Help"),
     ]
 

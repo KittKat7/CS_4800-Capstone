@@ -52,6 +52,12 @@ class Chat:
         """
         return self._history
     
+    def getNumUnread(self) -> int:
+        """
+        Returns the lumber of unread messages.
+        """
+        return self._numUnread
+    
     def readMessages(self, number: int, start: int = 0) -> list[Message]:
         """
         Returns a list of n messages, starting from m. If any messages are
@@ -69,6 +75,14 @@ class Chat:
                 self._numUnread -= 1
         
         return retVal
+
+    def getHeaderJsonObj(self) -> dict[str, object]:
+        """
+        Gets basic header info about the chat without the messages.
+        """
+        obj: dict[str, object] = self.toJsonObj()
+        obj["history"] = []
+        return obj
 
     def toJsonObj(self) -> dict[str, object]:
         """
