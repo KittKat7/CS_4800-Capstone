@@ -215,6 +215,11 @@ class Inbox:
         if not message.getSendingTo():
             if message in Inbox._outbox:
                 Inbox._outbox.remove(message)
+            c: Chat = Inbox._findOrCreateChat(message.getChatID())
+            for m in c.getMessageHistory():
+                if m.getSent() == message.getMessage().getSent():
+                    m.updateStatus(MessageStatus.SENT)
+                    break
             return True
 
         if message not in Inbox._outbox:
@@ -316,6 +321,11 @@ class Inbox:
 
                 case IDIOT_TYPE.SEND_MSG:
                     dm: DeliveryMessage = DeliveryMessage.fromJsonObj(json.loads(idiot.data))
+                    c: Chat = Inbox._findOrCreateChat(dm.getChatID())
+                    m: Message = dm.getMessage()
+                    m.updateStatus(MessageStatus.SENDING)
+                    c.updateMessageHistory(dm.getMessage())
+                    FileReader.updateChat(c)
                     r: bool = Inbox._sendMessage(dm)
                     idiotResponse: IDIOT = IDIOT(
                         IDIOT_TYPE.SEND_MSG,

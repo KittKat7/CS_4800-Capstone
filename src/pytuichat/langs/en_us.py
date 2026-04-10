@@ -3,7 +3,7 @@ language: dict[str, str] = {
     "endReq": "End Request",
 
     "mrkSending": "📨",
-    "mrkSent": "✅",
+    "mrkSent": "✉️",
     "mrkTimeout": "❌",
     "mrkUnread": "📬",
     "mrkRead": "✅",

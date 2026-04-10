@@ -82,7 +82,7 @@ def _formatMessage(msg: Message) -> str:
 
     return f"{mStatus} {strTime} {msg.getSender()}: {msg.getContent()}"
 
-def getMsgs(id: str, n: int = 1) -> str:
+def getMsgs(id: str, n: int = 100) -> str:
     """
     TODO
     """
@@ -91,7 +91,7 @@ def getMsgs(id: str, n: int = 1) -> str:
     msgStr: str = ""
     for m in json.loads(response.data):
         msgStr += _formatMessage(Message.fromJsonObj(m)) + "\n"
-    return msgStr + lang.getString("endReq")
+    return msgStr
 
 def sendMsg(chatid: str, msg: str) -> str:
     """
