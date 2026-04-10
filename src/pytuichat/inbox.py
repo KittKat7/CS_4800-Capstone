@@ -215,8 +215,8 @@ class Inbox:
         if not message.getSendingTo():
             if message in Inbox._outbox:
                 Inbox._outbox.remove(message)
-            c: Chat = Inbox._findOrCreateChat(message.getChatID())
-            for m in c.getMessageHistory():
+            ch: Chat = Inbox._findOrCreateChat(message.getChatID())
+            for m in ch.getMessageHistory():
                 if m.getSent() == message.getMessage().getSent():
                     m.updateStatus(MessageStatus.SENT)
                     break

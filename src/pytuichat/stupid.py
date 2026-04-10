@@ -50,7 +50,7 @@ class STUPID:
 
 
     @staticmethod
-    def fromBytes(data: bytes) -> STUPID:
+    def fromBytes(data: bytes) -> 'STUPID':
         """
         Takes a list of bytes and turns it into a STUPID object.
         """
@@ -63,7 +63,7 @@ class STUPID:
         )
 
     @staticmethod
-    def encodeStupid(data: str) -> list[STUPID]:
+    def encodeStupid(data: str) -> list['STUPID']:
         """
         Takes a string data and returns a list of STUPIDs containing the data,
         ready to be send over sockets.
@@ -91,7 +91,7 @@ class STUPID:
         return packetList
     
     @staticmethod
-    def decodeStupid(packets: list[STUPID]) -> str:
+    def decodeStupid(packets: list['STUPID']) -> str:
         rstr: str = ""
         for p in packets:
             rstr += p.data.decode(STUPID.STR_ENCODE)
