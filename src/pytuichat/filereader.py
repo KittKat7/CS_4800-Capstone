@@ -67,7 +67,7 @@ class FileReader:
         """
         defaults = {
                         "show_nicknames" : "yes",
-                        "highlight_color" : "yellow",
+                        "time_format" : "12_hour",
                         "sort_by" : "most_recent_message",
                         "confirm_deletion" : "yes"
                     }

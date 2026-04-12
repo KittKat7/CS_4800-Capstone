@@ -59,7 +59,7 @@ class TestFileIO(unittest.TestCase):
         the file.
         """
         settings = {"show_nicknames" : "yes",
-                    "highlight_color" : "orange",
+                    "time_format" : "12_hour",
                     "sort_by" : "most_recent_message",
                     "confirm_deletion" : "no"
                     }
