@@ -18,13 +18,13 @@ class settingsManager:
         """
         return self._24Hour
     
-    def changeShowNicknames(self, val: bool):
+    def setShowNicknames(self, val: bool):
         """
         Changes the show nicknames setting to the new value val.
         """
         self._showNicknames = val
 
-    def change24Hour(self, val: bool):
+    def set24Hour(self, val: bool):
         """
         Changes the 24 hour time setting to the new value val.
         """
