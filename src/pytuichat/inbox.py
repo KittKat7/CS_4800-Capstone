@@ -355,6 +355,11 @@ class Inbox:
                         IDIOT_TYPE.LIST_CHATS, json.dumps(responseJson))
                     socketio.sendSocketIO(connection, idiotResponse.toString())
 
+                case IDIOT_TYPE.PING:
+                    idiotResponse: IDIOT = IDIOT(
+                        IDIOT_TYPE.LIST_CHATS, "")
+                    socketio.sendSocketIO(connection, idiotResponse.toString())
+
                 case _:
                     raise Exception("OH NO")
 
