@@ -1,8 +1,8 @@
 from typing import cast
 
 from textual.app import App, ComposeResult
-from textual.widgets import Label, Input, TextArea, Button, Footer, Header
-from textual.containers import Horizontal, Vertical
+from textual.widgets import Input, TextArea, Button, Footer, Header
+from textual.containers import Vertical
 from textual.screen import Screen
 
 import lang
@@ -13,7 +13,7 @@ lang.setLangMap("en_us")
 
 activeChat: str = ""
 
-class DashboardScreen(Screen):
+class DashboardScreen(Screen[None]):
     """
     The home screen when the app launches. Allows navigation to chats, help
     pages, and settings.
@@ -47,9 +47,9 @@ class DashboardScreen(Screen):
         if "chatbtn" in event.button.classes:
             global activeChat
             activeChat = cast(str, event.button.name)
-            self.app.push_screen(MessageScreen())
+            app.push_screen(MessageScreen())
 
-class MessageScreen(Screen):
+class MessageScreen(Screen[None]):
     """
     The screen where you view and send messages.
     """
@@ -77,7 +77,7 @@ class MessageScreen(Screen):
     def updateMessages(self) -> None:
         self.content.text = cli.getMsgs(activeChat)
 
-class HelpScreen(Screen):
+class HelpScreen(Screen[None]):
     """
     The screen that shows help for the app.
     """
@@ -124,5 +124,5 @@ class ModesApp(App[None]):
         self.switch_mode("dashboard")
 
 if __name__ == "__main__":
-    app = ModesApp()
+    app: App[None] = ModesApp()
     app.run()

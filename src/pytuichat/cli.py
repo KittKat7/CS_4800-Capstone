@@ -106,6 +106,7 @@ def sendMsg(chatid: str, msg: str) -> str:
         chatid
     )
     response: IDIOT = singleCliCommand(IDIOT(IDIOT_TYPE.SEND_MSG, json.dumps(dm.toJsonObj())))
+
     return response.data
 
 if __name__ == "__main__":
