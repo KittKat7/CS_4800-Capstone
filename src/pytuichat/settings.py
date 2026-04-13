@@ -3,8 +3,15 @@ from filereader import FileReader
 class settingsManager:
     def __init__(self):
         userSettings = FileReader.getSettings()
-        self._showNicknames = userSettings["show_nicknames"]
-        self._24Hour = userSettings["24_hour_time"]
+        try:
+            self._showNicknames = userSettings["show_nicknames"]
+            self._24Hour = userSettings["24_hour_time"]
+        except KeyError:
+            # Triggers if the user's setting file is missing an entry
+            FileReader.makeSettings()
+            userSettings = FileReader.getSettings()
+            self._showNicknames = userSettings["show_nicknames"]
+            self._24Hour = userSettings["24_hour_time"]
 
     def getShowNicknames(self) -> bool:
         """

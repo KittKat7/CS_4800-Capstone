@@ -142,5 +142,7 @@ if __name__ == "__main__":
         case "send":
             tf = sendMsg(args[1], args[2])
             print("Message send:", tf)
+        case "defaults":
+            FileReader.makeSettings()
         case _:
             print("UNKNOWN: " + args[0])
