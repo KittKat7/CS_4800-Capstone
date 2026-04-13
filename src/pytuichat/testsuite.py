@@ -44,10 +44,8 @@ class TestFileIO(unittest.TestCase):
         default values.
         """
         defaults = {
-                        "show_nicknames" : "yes",
-                        "highlight_color" : "yellow",
-                        "sort_by" : "most_recent_message",
-                        "confirm_deletion" : "yes"
+                    "show_nicknames" : True,
+                    "24_hour_time" : False
                     }
         FileReader.makeSettings()
         settings = FileReader.getSettings()
@@ -58,10 +56,9 @@ class TestFileIO(unittest.TestCase):
         Test that updateSettings correctly changes the value of the settings in
         the file.
         """
-        settings = {"show_nicknames" : "yes",
-                    "time_format" : "12_hour",
-                    "sort_by" : "most_recent_message",
-                    "confirm_deletion" : "no"
+        settings = {
+                    "show_nicknames" : True,
+                    "24_hour_time" : False
                     }
         # Reset settings to their defaults first
         FileReader.makeSettings()
