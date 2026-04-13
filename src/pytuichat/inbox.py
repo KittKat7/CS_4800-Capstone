@@ -9,6 +9,7 @@ from chat import *
 from spit import *
 from idiot import *
 from filereader import *
+from settings import *
 import debug
 import socketio
 
@@ -26,6 +27,7 @@ class Inbox:
     _contacts: dict[str, Contact]
     _chats: dict[str, Chat]
     _outbox: list[DeliveryMessage]
+    _settingsManager: settingsManager
 
     # _operationQueue: list[_InboxOperation] = []
 
@@ -56,6 +58,7 @@ class Inbox:
         for n in tmpChatNames:
             Inbox._chats[n] = FileReader.getChat(n)
         Inbox._outbox = FileReader.getUnsent()
+        Inbox._settingsManager = settingsManager()
 
         # Set up and run the messaging socket and threat
         Inbox._msgSocket = Inbox._createMsgSocket()
@@ -77,6 +80,9 @@ class Inbox:
         Inbox._cliThread.start()
         print("Inbox started")
 
+    @staticmethod
+    def getSettingsManager() -> settingsManager:
+        return Inbox._settingsManager
 
     @staticmethod
     def ping(contact: Contact) -> bool:
@@ -407,7 +413,3 @@ class Inbox:
                 time += 1
         except:
             Inbox._isRunning = False
-
-
-
-

@@ -75,7 +75,11 @@ def _formatMessage(msg: Message) -> str:
             mStatus = lang.getString("mrkUnread")
         case MessageStatus.READ:
             mStatus = lang.getString("mrkRead")
-    strTime: str = str(msg.getSent().strftime("%Y%m%d %I%M%p"))
+    strTime: str
+    if Inbox.getSettingsManager().get24Hour():
+        strTime: str = str(msg.getSent().strftime("%Y%m%d %H%M%p"))
+    else:
+        strTime: str = str(msg.getSent().strftime("%Y%m%d %I%M%p"))
 
     return f"{mStatus} {strTime} {msg.getSender()}: {msg.getContent()}"
 
