@@ -13,6 +13,8 @@ language: dict[str, str] = {
     "btnBack": "Back",
     "btnExit": "Exit",
 
+    "errNotStarted": "ERR: The Inbox program does not seem to be started",
+
     "txtHelp": """
         Hello World.
         This is an example of text stuff.

@@ -86,6 +86,9 @@ def getMsgs(id: str, n: int = 100) -> str:
     """
     TODO
     """
+    if not ping():
+        return lang.getString("errNotStarted")
+    
     response: IDIOT = singleCliCommand(IDIOT(IDIOT_TYPE.READ_MSGS, json.dumps({"id": id, "n": n})))
     
     msgStr: str = ""
@@ -97,6 +100,9 @@ def sendMsg(chatid: str, msg: str) -> str:
     """
     TODO
     """
+    if not ping():
+        return lang.getString("errNotStarted")
+    
     dm: DeliveryMessage = DeliveryMessage(
         Message(
             msg,
