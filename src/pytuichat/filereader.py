@@ -66,12 +66,9 @@ class FileReader:
         Makes the necessary folder for the settings and adds the settings to it.
         """
         defaults = {
-                        "show_nicknames" : "yes",
-                        "time_format" : "12_hour",
-                        "sort_by" : "most_recent_message",
-                        "confirm_deletion" : "yes"
+                        "show_nicknames" : True,
+                        "24_hour_time" : False
                     }
-        
         title = "settings.json"
         dir_path = FileReader.getConfigDir()
         full_path = os.path.join(dir_path, title)
@@ -82,7 +79,7 @@ class FileReader:
             print("Error:\n", e, sep="")
             
     @staticmethod
-    def getSettings() -> dict[str, str]:
+    def getSettings() -> dict[str, bool]:
         """
         Returns a dict representing the user's list of settings. If the file
         doesn't exist, create it and populate with the default settings.
@@ -92,10 +89,10 @@ class FileReader:
         full_path = os.path.join(dir_path, title)
         if not os.path.isfile(full_path):
             FileReader.makeSettings()
-        return cast(dict[str, str], json.loads(FileReader.readFile(full_path)))
+        return cast(dict[str, bool], json.loads(FileReader.readFile(full_path)))
 
     @staticmethod
-    def updateSettings(settings: dict[str, str]):
+    def updateSettings(settings: dict[str, bool]):
         """
         Updates the settings file with new values.
         """
