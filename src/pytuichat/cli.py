@@ -3,6 +3,7 @@ import sys
 import os
 import subprocess
 import getpass
+import time
 
 from inbox import *
 from filereader import *
@@ -38,7 +39,8 @@ def start() -> bool:
             preexec_fn=os.setsid,
             close_fds=True,
         )
-        return True
+        time.sleep(1)
+        return ping()
 
 def stop() -> bool:
     """

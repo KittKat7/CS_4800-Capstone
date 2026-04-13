@@ -36,7 +36,6 @@ class DashboardScreen(Screen[None]):
                     name=c.getUniqueID(),
                     classes="chatbtn",
                     compact=True,
-                    # action="push_screen(\"HelpScreen()\")",
                 )
                 for c in chts
             ]
@@ -104,14 +103,16 @@ class ModesApp(App[None]):
     BINDINGS = [
         ("ctrl+q", "quit", "quit"),
         ("ctrl+b", "back", "Back"),
-        ("d", "switch_mode('dashboard')", "Dashboard"),
-        ("h", "switch_mode('help')", "Help"),
+        ("h", "help", "Help"),
     ]
 
     MODES = { #type: ignore
         "dashboard": DashboardScreen,
-        "help": HelpScreen,
     }
+
+    async def action_help(self) -> None:
+        if type(self.screen_stack[-1]) != HelpScreen:
+            self.push_screen(HelpScreen())
 
     async def action_back(self) -> None:
         if len(self.screen_stack) > 1:
@@ -121,7 +122,11 @@ class ModesApp(App[None]):
         # self.switch_mode("dashboard")
         self.title = lang.getString("lblTitle")
         self.sub_title = lang.getString("lblSubTitle")
-        self.switch_mode("dashboard")
+        
+        if cli.start():
+            self.switch_mode("dashboard")
+        else:
+            self.switch_mode("notStarted")
 
 if __name__ == "__main__":
     app: App[None] = ModesApp()
