@@ -74,7 +74,7 @@ class FileReader:
         full_path = os.path.join(dir_path, title)
         os.makedirs(os.path.dirname(full_path), exist_ok = True)
         try:
-            FileReader.writeFile(full_path, json.dumps(defaults))
+            FileReader.writeFile(full_path, defaults)
         except Exception as e:
             print("Error:\n", e, sep="")
             
