@@ -6,7 +6,7 @@ class settingsManager:
         try:
             self._showNicknames = userSettings["show_nicknames"]
             self._24Hour = userSettings["24_hour_time"]
-        except KeyError:
+        except Exception:
             # Triggers if the user's setting file is missing an entry
             FileReader.makeSettings()
             userSettings = FileReader.getSettings()
