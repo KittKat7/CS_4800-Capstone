@@ -1,9 +1,10 @@
 from typing import cast
 
 from textual.app import App, ComposeResult
-from textual.widgets import Input, TextArea, Button, Footer, Header
+from textual.widgets import Input, TextArea, Button, Footer, Header, Label
 from textual.containers import Vertical
 from textual.screen import Screen
+from textual.binding import Binding
 
 import lang
 import cli
@@ -13,6 +14,20 @@ lang.setLangMap("en_us")
 
 activeChat: str = ""
 
+
+class LoadingScreen(Screen[None]):
+    """
+    The home screen when the app launches. Allows navigation to chats, help
+    pages, and settings.
+    """
+
+    def compose(self) -> ComposeResult:
+        """
+        Compose the page.
+        """
+        yield Header()
+        yield Label("Page is loading!!! TODO")
+
 class DashboardScreen(Screen[None]):
     """
     The home screen when the app launches. Allows navigation to chats, help
@@ -20,7 +35,7 @@ class DashboardScreen(Screen[None]):
     """
 
     CSS = """
-    .chatbtn { width: 100%; text-align: left; }
+    .chatbtn { width: 100%; text-align: left; content-align: left middle; }
     """
 
     def compose(self) -> ComposeResult:
@@ -101,13 +116,15 @@ class ModesApp(App[None]):
     """
 
     BINDINGS = [
-        ("ctrl+q", "quit", "quit"),
-        ("ctrl+b", "back", "Back"),
-        ("h", "help", "Help"),
+        Binding("ctrl+q", "quit", "Quit"),
+        Binding("ctrl+b", "back", "Back"),
+        Binding("ctrl+k", "kill", "Kill (inbox)"),
+        Binding("h", "help", "Help"),
     ]
 
     MODES = { #type: ignore
         "dashboard": DashboardScreen,
+        "loading"  : LoadingScreen,
     }
 
     async def action_help(self) -> None:
@@ -117,16 +134,21 @@ class ModesApp(App[None]):
     async def action_back(self) -> None:
         if len(self.screen_stack) > 1:
             self.pop_screen()
+    
+    async def action_kill(self) -> None:
+        # return await super().action_quit()
+        cli.stop()
+        return await super().action_quit()
 
     def on_mount(self) -> None:
         # self.switch_mode("dashboard")
         self.title = lang.getString("lblTitle")
         self.sub_title = lang.getString("lblSubTitle")
         
+        self.switch_mode("loading")
+
         if cli.start():
             self.switch_mode("dashboard")
-        else:
-            self.switch_mode("notStarted")
 
 if __name__ == "__main__":
     app: App[None] = ModesApp()

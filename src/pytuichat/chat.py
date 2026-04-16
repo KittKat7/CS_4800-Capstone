@@ -74,6 +74,9 @@ class Chat:
                 m.updateStatus(MessageStatus.READ)
                 self._numUnread -= 1
         
+        if self._numUnread < 0:
+            self._numUnread = 0
+        
         return retVal
 
     def getHeaderJsonObj(self) -> dict[str, object]:
