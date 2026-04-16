@@ -1,7 +1,22 @@
 from filereader import FileReader
 
-class settingsManager:
+class SettingsManager:
+
+    _instance: 'SettingsManager | None' = None
+
+    @staticmethod
+    def getSettingsManager() -> 'SettingsManager':
+        """
+        Returns an existing, or makes a new instance of SettingsManager.
+        """
+        if not SettingsManager._instance:
+            SettingsManager._instance = SettingsManager()
+        return SettingsManager._instance
+
     def __init__(self):
+        """
+        Constructor.
+        """
         userSettings = FileReader.getSettings()
         try:
             self._showNicknames = userSettings["show_nicknames"]
