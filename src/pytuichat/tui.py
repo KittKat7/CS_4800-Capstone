@@ -9,11 +9,13 @@ from textual.binding import Binding
 import lang
 import cli
 from chat import Chat
+from idiot import IDIOT, IDIOT_TYPE
+import socketio
 
 lang.setLangMap("en_us")
 
-activeChat: str = ""
-
+class _tui:
+    activeChat: str = ""
 
 class LoadingScreen(Screen[None]):
     """
@@ -59,9 +61,39 @@ class DashboardScreen(Screen[None]):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if "chatbtn" in event.button.classes:
-            global activeChat
-            activeChat = cast(str, event.button.name)
+            _tui.activeChat = cast(str, event.button.name)
             app.push_screen(MessageScreen())
+
+class NewChatScreen(Screen[None]):
+    """
+    The home screen when the app launches. Allows navigation to chats, help
+    pages, and settings.
+    """
+
+    def compose(self) -> ComposeResult:
+        """
+        Compose the page.
+        """
+        yield Header()
+        yield Label(lang.getString("lblCreateNewChat"))
+        yield Input(placeholder="Type something here...", id="input")
+        yield Footer()
+
+    def on_input_submitted(self, event: Input.Submitted) -> None:
+        """
+        Handle input when the user presses Enter.
+        """
+        inp: str = "".join(event.input.value.split())
+        if not inp:
+            return
+
+        chatid: str = Chat.encodeParticipantID(inp.split(","))
+        chatid = socketio.singleCliCommand(IDIOT(IDIOT_TYPE.CREATE_CHAT, chatid)).data
+        event.input.value = ""
+        _tui.activeChat = chatid
+        app.pop_screen()
+        app.push_screen(MessageScreen())
+        # self.updateMessages()
 
 class MessageScreen(Screen[None]):
     """
@@ -84,12 +116,12 @@ class MessageScreen(Screen[None]):
         """
         Handle input when the user presses Enter.
         """
-        cli.sendMsg(activeChat, event.input.value)
+        cli.sendMsg(_tui.activeChat, event.input.value)
         event.input.value = ""
         self.updateMessages()
 
     def updateMessages(self) -> None:
-        self.content.text = cli.getMsgs(activeChat)
+        self.content.text = cli.getMsgs(_tui.activeChat)
 
 class HelpScreen(Screen[None]):
     """
@@ -116,10 +148,11 @@ class ModesApp(App[None]):
     """
 
     BINDINGS = [
-        Binding("ctrl+q", "quit", "Quit"),
-        Binding("ctrl+b", "back", "Back"),
-        Binding("ctrl+k", "kill", "Kill (inbox)"),
-        Binding("h", "help", "Help"),
+        Binding("ctrl+k", "kill", "Kill (inbox)", show=True),
+        Binding("ctrl+q", "quit", "Quit", show=True),
+        Binding("ctrl+b", "back", "Back", show=True),
+        Binding("ctrl+n", "newc", "New Chat", show=True),
+        Binding("h", "help", "Help", show=True),
     ]
 
     MODES = { #type: ignore
@@ -139,6 +172,10 @@ class ModesApp(App[None]):
         # return await super().action_quit()
         cli.stop()
         return await super().action_quit()
+    
+    async def action_newc(self) -> None:
+        if type(self.screen_stack[-1]) == DashboardScreen:
+            self.push_screen(NewChatScreen())
 
     def on_mount(self) -> None:
         # self.switch_mode("dashboard")

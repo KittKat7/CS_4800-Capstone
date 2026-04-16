@@ -365,9 +365,18 @@ class Inbox:
                     idiotResponse: IDIOT = IDIOT(
                         IDIOT_TYPE.LIST_CHATS, "")
                     socketio.sendSocketIO(connection, idiotResponse.toString())
+                
+                case IDIOT_TYPE.CREATE_CHAT:
+                    chatid: str = idiot.data
+                    chat: Chat = Inbox._findOrCreateChat(chatid)
+                    idiotResponse: IDIOT = IDIOT(
+                        IDIOT_TYPE.CREATE_CHAT, chat.getUniqueID())
+                    socketio.sendSocketIO(connection, idiotResponse.toString())
 
                 case _:
                     raise Exception("OH NO")
+        except Exception as e:
+            print(e)
 
         finally:
             # close the connection

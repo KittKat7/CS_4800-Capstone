@@ -14,6 +14,7 @@ class Chat:
         """
         Build a unique ID for a chat, from a list of contact names.
         """
+        contactNames.sort()
         separator = "-"
         return separator.join(contactNames)
     

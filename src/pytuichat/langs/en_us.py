@@ -9,6 +9,10 @@ language: dict[str, str] = {
 
     "lblTitle": "PyTUI Chat",
     "lblSubTitle": "Terminal messaging!",
+    "lblCreateNewChat": """Enter the ID of the chat (usernames, case sensitive).
+For multiple users, separate with a comma. For example: \"UserA\", or
+\"UserA, UserB\"""",
+
     "btnBack": "Back",
     "btnExit": "Exit",
 
