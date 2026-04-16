@@ -1,6 +1,5 @@
 
 language: dict[str, str] = {
-    "endReq": "End Request",
 
     "mrkSending": "📨",
     "mrkSent": "✉️",
@@ -12,6 +11,12 @@ language: dict[str, str] = {
     "lblSubTitle": "Terminal messaging!",
     "btnBack": "Back",
     "btnExit": "Exit",
+
+    "pptInteractive": "PyTUI Chat (Interactive)",
+    "pptSingular": "PyTUI Chat (Singular)",
+    "pptConsole": "Enter [a command, \"help\" or \"exit\"]\n> ",
+    "pptExiting": "Good Bye!",
+    "pptEndReq": "End Request",
 
     "errNotStarted": "ERR: The Inbox program does not seem to be started",
 

@@ -27,7 +27,7 @@ class Inbox:
     _contacts: dict[str, Contact]
     _chats: dict[str, Chat]
     _outbox: list[DeliveryMessage]
-    _settingsManager: settingsManager
+    _settingsManager: SettingsManager
 
     # _operationQueue: list[_InboxOperation] = []
 
@@ -58,7 +58,7 @@ class Inbox:
         for n in tmpChatNames:
             Inbox._chats[n] = FileReader.getChat(n)
         Inbox._outbox = FileReader.getUnsent()
-        Inbox._settingsManager = settingsManager()
+        Inbox._settingsManager = SettingsManager()
 
         # Set up and run the messaging socket and threat
         Inbox._msgSocket = Inbox._createMsgSocket()
@@ -81,7 +81,7 @@ class Inbox:
         print("Inbox started")
 
     @staticmethod
-    def getSettingsManager() -> settingsManager:
+    def getSettingsManager() -> SettingsManager:
         return Inbox._settingsManager
 
     @staticmethod
