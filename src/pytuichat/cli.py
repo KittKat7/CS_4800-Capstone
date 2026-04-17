@@ -108,20 +108,21 @@ def getMsgs(id: str, n: int = 100) -> str:
         msgStr += _formatMessage(Message.fromJsonObj(m)) + "\n"
     return msgStr
 
-def sendMsg(chatid: str, msg: str) -> str:
+def sendMsg(id: str, msg: str) -> str:
     """
     TODO
     """
     if not ping():
         return lang.getString("errNotStarted")
     
+    id = Chat.encodeParticipantID(Chat.decodeParticipantID(id) + [getpass.getuser()])
     dm: DeliveryMessage = DeliveryMessage(
         Message(
             msg,
             getpass.getuser(),
         ),
-        Chat.decodeParticipantID(chatid),
-        chatid
+        Chat.decodeParticipantID(id),
+        id
     )
     response: IDIOT = singleCliCommand(IDIOT(IDIOT_TYPE.SEND_MSG, json.dumps(dm.toJsonObj())))
 

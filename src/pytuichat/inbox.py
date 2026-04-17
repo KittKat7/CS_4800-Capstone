@@ -71,6 +71,7 @@ class Inbox:
         # Set up and run the cli socket
         Inbox._cliSocket = Inbox._createCliSocket()
         Inbox._cliSocket.listen(1)
+        Inbox._cliSocket.setblocking(False)
 
         # TODO cleanup
         # Inbox._cliThread = threading.Thread(
@@ -199,29 +200,24 @@ class Inbox:
         send the message to contacts when possible.
         """
         # if sending to self...
-        if message.getChatID() == getpass.getuser():
+        if getpass.getuser() in message.getChatID():
             message.sentTo(getpass.getuser())
 
         sendTo: list[str] = message.getSendingTo()
         for c in sendTo:
             spit: SPIT = SPIT(SPIT.Type.MESSAGE, message.toJsonObj())
 
+            print(c)
             client: socket.socket
-            try:
-                client = socketio.createMessageClient(c)
-                try:
-                    socketio.sendSocketIO(client, spit.toString())
-                except Exception as e:
-                    client.close()
-                    raise e
-            except:
-                return False
+            print("b")
+            client = socketio.createMessageClient(c)
+            print("c")
+            socketio.sendSocketIO(client, spit.toString())
+            print("d")
 
-            try:
-                responseStr: str = socketio.recieveSocketIO(client)
-            except:
-                client.close()
-                return False
+            responseStr: str = socketio.recieveSocketIO(client)
+            print("e")
+            client.close()
 
             client.close()
 
@@ -285,6 +281,7 @@ class Inbox:
                     Inbox._recievedMessage(dmessage)
                     response = SPIT.Status.OK
                 case _:
+                    # TODO
                     raise Exception("OH NO")
 
             # Send a response back to the client
@@ -324,7 +321,10 @@ class Inbox:
         """
 
         # Wait for in inbound connection
-        connection = Inbox._cliSocket.accept()[0]
+        try:
+            connection = Inbox._cliSocket.accept()[0]
+        except:
+            return
         print('Connection from', str(connection))
 
         try:
