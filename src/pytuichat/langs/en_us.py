@@ -24,9 +24,11 @@ For multiple users, separate with a comma. For example: \"UserA\", or
 
     "errNotStarted": "ERR: The Inbox program does not seem to be started",
 
-    "txtHelp": """
-        Hello World.
-        This is an example of text stuff.
+    "txtHelpCli": """
+        TODO Put a help message here!
+        """,
+
+    "txtHelpTui": """
         TODO Put a help message here!
         """,
 }

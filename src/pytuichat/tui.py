@@ -139,7 +139,7 @@ class HelpScreen(Screen[None]):
         Compose the page.
         """
         yield Header()
-        yield TextArea(lang.getString("txtHelp"), read_only=True)
+        yield TextArea(lang.getString("txtHelpTui"), read_only=True)
         yield Footer()
 
 
