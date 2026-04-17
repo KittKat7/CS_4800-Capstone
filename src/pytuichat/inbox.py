@@ -206,13 +206,22 @@ class Inbox:
         for c in sendTo:
             spit: SPIT = SPIT(SPIT.Type.MESSAGE, message.toJsonObj())
 
+            client: socket.socket
             try:
-                client: socket.socket = socketio.createMessageClient(c)
-                socketio.sendSocketIO(client, spit.toString())
+                client = socketio.createMessageClient(c)
+                try:
+                    socketio.sendSocketIO(client, spit.toString())
+                except Exception as e:
+                    client.close()
+                    raise e
             except:
                 return False
 
-            responseStr: str = socketio.recieveSocketIO(client)
+            try:
+                responseStr: str = socketio.recieveSocketIO(client)
+            except:
+                client.close()
+                return False
 
             client.close()
 
@@ -346,10 +355,12 @@ class Inbox:
                     m.updateStatus(MessageStatus.SENDING)
                     c.updateMessageHistory(dm.getMessage())
                     FileReader.updateChat(c)
-                    r: bool = Inbox._sendMessage(dm)
+
+                    Inbox._newOutbox.append(dm)
+                    r = "sending"
                     idiotResponse: IDIOT = IDIOT(
                         IDIOT_TYPE.SEND_MSG,
-                        str(r))
+                        r)
                     socketio.sendSocketIO(connection, idiotResponse.toString())
 
                 case IDIOT_TYPE.READ_MSGS:
