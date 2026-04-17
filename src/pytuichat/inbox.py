@@ -28,6 +28,7 @@ class Inbox:
     _contacts: dict[str, Contact]
     _chats: dict[str, Chat]
     _outbox: list[DeliveryMessage]
+    _newOutbox: list[DeliveryMessage]
     _settingsManager: SettingsManager
 
     # _operationQueue: list[_InboxOperation] = []
@@ -60,7 +61,7 @@ class Inbox:
         for n in tmpChatNames:
             Inbox._chats[n] = FileReader.getChat(n)
         Inbox._outbox = FileReader.getUnsent()
-        Inbox._settingsManager = SettingsManager()
+        Inbox._newOutbox = []
 
         # Set up and run the messaging socket
         Inbox._msgSocket = Inbox._createMsgSocket()
@@ -176,12 +177,16 @@ class Inbox:
         """
         outboxLength: int = len(Inbox._outbox)
         updatePersist: bool = False
-        if len(Inbox._outbox) != outboxLength:
-            updatePersist = True
+
+        Inbox._outbox = Inbox._newOutbox + Inbox._outbox;
+        Inbox._newOutbox = []
 
         for dm in Inbox._outbox:
             if Inbox._sendMessage(dm):
                 updatePersist = True
+
+        if len(Inbox._outbox) != outboxLength:
+            updatePersist = True
 
         if updatePersist:
             FileReader.updateUnsentList(Inbox._outbox)
@@ -417,7 +422,7 @@ class Inbox:
                 time: int = int(ttime / 10)
 
                 # Handle resent heartbeat
-                if time % RESEND_TIME == 0:
+                if time % RESEND_TIME == 0 or Inbox._newOutbox:
                     # TODO resend things
                     Inbox._sendAllMessages()
 

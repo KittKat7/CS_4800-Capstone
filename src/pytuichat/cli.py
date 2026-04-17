@@ -186,7 +186,7 @@ def runcli(args: list[str]) -> None:
                     chats = listChats()
                     print(_formatChats(chats))
                 case "read":
-                    chat = getMsgs(inp[1], int(inp[2]))
+                    chat = getMsgs(inp[1], int(inp[2] if len(inp) >= 3 else 10))
                     print(chat)
                 case "send":
                     tf = sendMsg(inp[1], inp[2])
