@@ -98,6 +98,8 @@ def getMsgs(id: str, n: int = 100) -> str:
     """
     if not ping():
         return lang.getString("errNotStarted")
+
+    id = Chat.encodeParticipantID(Chat.decodeParticipantID(id) + [getpass.getuser()])
     
     response: IDIOT = singleCliCommand(IDIOT(IDIOT_TYPE.READ_MSGS, json.dumps({"id": id, "n": n})))
     
