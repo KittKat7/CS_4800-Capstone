@@ -161,6 +161,7 @@ class Inbox:
             Inbox._findOrCreateContact(c)
         chh: Chat = Chat(cl)
         # Save chat persistantly
+        Inbox._chats[chatID] = chh
         FileReader.updateChat(chh)
         # Return new chat
         return chh

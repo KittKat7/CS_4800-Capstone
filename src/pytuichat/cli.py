@@ -11,10 +11,6 @@ import lang
 from socketio import singleCliCommand
 from settings import SettingsManager as sm
 
-args = sys.argv[1:]
-
-lang.setLangMap("en_us")
-
 def ping() -> bool:
     """
     Returns true if able to ping the socket for the inbox
@@ -128,10 +124,11 @@ def sendMsg(chatid: str, msg: str) -> str:
 
     return response.data
 
-def runCli(args: list[str]) -> None:
+def runcli(args: list[str]) -> None:
     """
     Runs once for the CLI. This handles CLI commands from the user.
     """
+    lang.setLangMap("en_us")
 
     # Initiate variables
     running: bool = True
@@ -203,6 +200,3 @@ def runCli(args: list[str]) -> None:
             print()
         except Exception as e:
             print(e)
-
-if __name__ == "__main__":
-    runCli(args)

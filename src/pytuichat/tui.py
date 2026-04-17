@@ -16,6 +16,7 @@ lang.setLangMap("en_us")
 
 class _tui:
     activeChat: str = ""
+    app: App[None]
 
 class LoadingScreen(Screen[None]):
     """
@@ -62,7 +63,7 @@ class DashboardScreen(Screen[None]):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if "chatbtn" in event.button.classes:
             _tui.activeChat = cast(str, event.button.name)
-            app.push_screen(MessageScreen())
+            _tui.app.push_screen(MessageScreen())
 
 class NewChatScreen(Screen[None]):
     """
@@ -91,8 +92,8 @@ class NewChatScreen(Screen[None]):
         chatid = socketio.singleCliCommand(IDIOT(IDIOT_TYPE.CREATE_CHAT, chatid)).data
         event.input.value = ""
         _tui.activeChat = chatid
-        app.pop_screen()
-        app.push_screen(MessageScreen())
+        _tui.app.pop_screen()
+        _tui.app.push_screen(MessageScreen())
         # self.updateMessages()
 
 class MessageScreen(Screen[None]):
@@ -100,11 +101,16 @@ class MessageScreen(Screen[None]):
     The screen where you view and send messages.
     """
 
+    CSS = """
+    #label { width: 100%; text-align: center; }
+    """
+
     def compose(self) -> ComposeResult:
         """
         Compose the page.
         """
         yield Header()
+        yield Label("<<< " + _tui.activeChat + " >>>", id="label")
         self.content: TextArea = TextArea("", id="content", read_only=True)
         yield self.content
         yield Input(placeholder="Type something here...", id="input")
@@ -187,6 +193,6 @@ class ModesApp(App[None]):
         if cli.start():
             self.switch_mode("dashboard")
 
-if __name__ == "__main__":
-    app: App[None] = ModesApp()
-    app.run()
+def runtui() -> None:
+    _tui.app = ModesApp()
+    _tui.app.run()
