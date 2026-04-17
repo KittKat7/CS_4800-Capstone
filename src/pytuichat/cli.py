@@ -4,6 +4,7 @@ import os
 import subprocess
 import getpass
 import time
+import readline #type: ignore
 
 from inbox import *
 from filereader import *
