@@ -1,7 +1,8 @@
 import socket
 import getpass
 import asyncio
-import threading
+# TODO cleanup
+# import threading
 
 from message import *
 from contact import *
@@ -31,8 +32,9 @@ class Inbox:
 
     # _operationQueue: list[_InboxOperation] = []
 
-    _msgThread: threading.Thread
-    _cliThread: threading.Thread
+    # TODO cleanup
+    # _msgThread: threading.Thread
+    # _cliThread: threading.Thread
 
     _msgSocket: socket.socket
     _cliSocket: socket.socket
@@ -60,25 +62,26 @@ class Inbox:
         Inbox._outbox = FileReader.getUnsent()
         Inbox._settingsManager = SettingsManager()
 
-        # Set up and run the messaging socket and threat
+        # Set up and run the messaging socket
         Inbox._msgSocket = Inbox._createMsgSocket()
         Inbox._msgSocket.listen(1)
         Inbox._msgSocket.setblocking(False)
-        Inbox._msgThread = threading.Thread(
-            target = Inbox._startHeartbeat
-        )
 
-        # TODO
-        # Set up and run the cli socket and threat
+        # Set up and run the cli socket
         Inbox._cliSocket = Inbox._createCliSocket()
         Inbox._cliSocket.listen(1)
+
+        # TODO cleanup
         # Inbox._cliThread = threading.Thread(
         #     target = Inbox._cliRecieved
         # )
-
-        Inbox._msgThread.start()
+        # Inbox._msgThread = threading.Thread(
+        #     target = Inbox._startHeartbeat
+        # )
+        # Inbox._msgThread.start()
         # Inbox._cliThread.start()
         print("Inbox started")
+        Inbox._startHeartbeat()
 
     @staticmethod
     def getSettingsManager() -> SettingsManager:
