@@ -206,22 +206,18 @@ class Inbox:
         for c in sendTo:
             spit: SPIT = SPIT(SPIT.Type.MESSAGE, message.toJsonObj())
 
+            print("a")
             client: socket.socket
-            try:
-                client = socketio.createMessageClient(c)
-                try:
-                    socketio.sendSocketIO(client, spit.toString())
-                except Exception as e:
-                    client.close()
-                    raise e
-            except:
-                return False
+            print("b")
+            client = socketio.createMessageClient(c)
+            print("c")
+            socketio.sendSocketIO(client, spit.toString())
+            print("d")
+            client.close()
+            print("e")
 
-            try:
-                responseStr: str = socketio.recieveSocketIO(client)
-            except:
-                client.close()
-                return False
+            responseStr: str = socketio.recieveSocketIO(client)
+            client.close()
 
             client.close()
 
