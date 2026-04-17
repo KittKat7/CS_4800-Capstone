@@ -72,12 +72,12 @@ class Inbox:
         # Set up and run the cli socket and threat
         Inbox._cliSocket = Inbox._createCliSocket()
         Inbox._cliSocket.listen(1)
-        Inbox._cliThread = threading.Thread(
-            target = Inbox._cliRecieved
-        )
+        # Inbox._cliThread = threading.Thread(
+        #     target = Inbox._cliRecieved
+        # )
 
         Inbox._msgThread.start()
-        Inbox._cliThread.start()
+        # Inbox._cliThread.start()
         print("Inbox started")
 
     @staticmethod
@@ -398,12 +398,14 @@ class Inbox:
         MAX_LOWER: int = -65536
         RESEND_TIME: int = 60
         CHECK_INBOX_TIME: int = 1
+        CHECK_CLI_TIME: int = 1
 
-        time: int = 0
+        ttime: int = 0
         
         try:
             while Inbox._isRunning:
-                await asyncio.sleep(1)
+                await asyncio.sleep(0.1)
+                time: int = int(ttime / 10)
 
                 # Handle resent heartbeat
                 if time % RESEND_TIME == 0:
@@ -414,11 +416,15 @@ class Inbox:
                 if time % CHECK_INBOX_TIME == 0:
                     # TODO check inbox
                     Inbox._handleMsgConnect()
+                
+                if time % CHECK_CLI_TIME == 0:
+                    Inbox._handleCliRecieved()
 
                 # If time passes MAX_TIME reset the time to 0
                 if time >= MAX_TIME:
                     time = MAX_LOWER
                 # Increment the time
-                time += 1
-        except:
+                ttime += 1
+        except Exception as e:
+            print(e)
             Inbox._isRunning = False
