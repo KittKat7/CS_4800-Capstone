@@ -92,6 +92,30 @@ def _formatMessage(msg: Message) -> str:
 
     return f"{mStatus} {strTime} {msg.getSender()}: {msg.getContent()}"
 
+def showSettings() -> dict[str, bool]:
+    """
+    Return a dict representing the user settings.
+    """
+    manager = sm.getSettingsManager()
+    output: dict[str, bool] = {}
+    output["24_hour_time"] = manager.get24Hour()
+    output["show_nicknames"] = manager.getShowNicknames()
+    return output
+
+def updateNicks(showNicks: bool):
+    """
+    Update the settings manager and user's settings file with new preference.
+    """
+    manager = sm.getSettingsManager()
+    manager.setShowNicknames(showNicks)
+
+def updateTwentyFour(twentyfour: bool):
+    """
+    Update the settings manager and user's settings file with new preference.
+    """
+    manager = sm.getSettingsManager()
+    manager.setShowNicknames(twentyfour)
+
 def getMsgs(id: str, n: int = 100) -> str:
     """
     TODO
@@ -194,8 +218,18 @@ def runcli(args: list[str]) -> None:
                 case "send":
                     tf = sendMsg(inp[1], inp[2])
                     print("Message send:", tf)
-                case "defaults":
-                    FileReader.makeSettings()
+                case "settings":
+                    if len(inp) == 1:
+                        print(showSettings())
+                    elif inp[1] == "24hour":
+                        print("Updating 24_hour_time")
+                        updateTwentyFour(bool(inp[2]))
+                    elif inp[1] == "nicks":
+                        print("Updating show_nicknames")
+                        updateNicks(bool(inp[2]))
+                    else:
+                        print("TODO HELP STRING SETTINGS")
+                    print(inp[1], inp[2])
                 case _:
                     print("UNKNOWN: " + inp[0])
             
