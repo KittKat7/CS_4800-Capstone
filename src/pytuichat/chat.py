@@ -1,10 +1,14 @@
 from typing import cast
+import getpass
 
 from message import *
 from contact import *
 
 class Chat:
     def __init__(self, contacts: list[str]):
+        if getpass.getuser() not in contacts:
+            contacts.append(getpass.getuser())
+        contacts.sort()
         self._numUnread: int = 0
         self._participants: list[str] = contacts
         self._history: list[Message] = []
@@ -44,7 +48,8 @@ class Chat:
         messages.
         """
         self._history = [message] + self._history
-        self._numUnread += 1
+        if message.getStatus == MessageStatus.UNREAD:
+            self._numUnread += 1
         # Write to persistant storage
     
     def getMessageHistory(self) -> list[Message]:

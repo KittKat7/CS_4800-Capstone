@@ -190,6 +190,10 @@ class Inbox:
         Sends a message by adding it to the outbox. The message send loop will
         send the message to contacts when possible.
         """
+        # if sending to self...
+        if message.getChatID() == getpass.getuser():
+            message.sentTo(getpass.getuser())
+
         sendTo: list[str] = message.getSendingTo()
         for c in sendTo:
             spit: SPIT = SPIT(SPIT.Type.MESSAGE, message.toJsonObj())
@@ -216,7 +220,8 @@ class Inbox:
             except:
                 continue
 
-            # Fail cases will continue, leaving this to run when it succeeds
+            # Fail cases will continue to next iteration of the loop, leaving
+            # this to run when it succeeds
             message.sentTo(c)
         
         if not message.getSendingTo():
