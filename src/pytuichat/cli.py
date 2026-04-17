@@ -58,7 +58,7 @@ def _formatChats(chats: list[Chat]) -> str:
     """
     s: str = ""
     for c in chats:
-        s += f"{c.getUniqueID()} - {c.getNumUnread()}; "
+        s += f"{c.getDisplayUniqueID()} - {c.getNumUnread()}; "
     return s
 
 def listChats() -> list[Chat]:

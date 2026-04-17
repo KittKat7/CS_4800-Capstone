@@ -36,6 +36,19 @@ class Chat:
         """
         return Chat.encodeParticipantID(self._participants)
     
+    def getDisplayUniqueID(self) -> str:
+        """
+        Returns the unique ID of this chat. This ID is created based on the chat
+        participants. This is for display purposes, IE, remove self from list.
+        """
+        l: list[str] = []
+        for c in self._participants:
+            if c != getpass.getuser():
+                l.append(c)
+        if not l:
+            l.append(getpass.getuser())
+        return Chat.encodeParticipantID(l)
+    
     def getParticipants(self) -> list[str]:
         """
         Get the list of users participating in this Chat
