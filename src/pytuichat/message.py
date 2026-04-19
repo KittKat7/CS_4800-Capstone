@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from enum import Enum
 from typing import cast
 
@@ -18,6 +18,9 @@ class Message:
     """
     A message which will be stored in a Chat.
     """
+
+    TIMEOUT = timedelta(days=5)
+
     def __init__(
     self,
     content: str,

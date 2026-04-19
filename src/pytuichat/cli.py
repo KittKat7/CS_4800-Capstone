@@ -5,6 +5,7 @@ import subprocess
 import getpass
 import time
 import readline #type: ignore
+import traceback
 
 from inbox import *
 from filereader import *
@@ -238,3 +239,4 @@ def runcli(args: list[str]) -> None:
             print()
         except Exception as e:
             print(e)
+            print(traceback.format_exc())

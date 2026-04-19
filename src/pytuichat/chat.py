@@ -73,6 +73,16 @@ class Chat:
         """
         return self._history
     
+    def getMessageByDate(self, date: datetime) -> Message|None:
+        """
+        Gets the message based on the send date provided, or non if it does not
+        exist.
+        """
+        for m in self._history:
+            if m.getSent == date:
+                return m
+        return None
+    
     def getNumUnread(self) -> int:
         """
         Returns the lumber of unread messages.

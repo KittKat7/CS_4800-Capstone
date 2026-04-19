@@ -3,6 +3,7 @@ import getpass
 import asyncio
 # TODO cleanup
 # import threading
+import traceback
 
 from message import *
 from contact import *
@@ -204,21 +205,20 @@ class Inbox:
             message.sentTo(getpass.getuser())
 
         sendTo: list[str] = message.getSendingTo()
+        print(sendTo)
         for c in sendTo:
             spit: SPIT = SPIT(SPIT.Type.MESSAGE, message.toJsonObj())
 
             print(c)
             client: socket.socket
             print("b")
-            client = socketio.createMessageClient(c)
-            print("c")
+            try:
+                client = socketio.createMessageClient(c)
+            except:
+                continue
+
             socketio.sendSocketIO(client, spit.toString())
-            print("d")
-
             responseStr: str = socketio.recieveSocketIO(client)
-            print("e")
-            client.close()
-
             client.close()
 
             try:
@@ -237,7 +237,11 @@ class Inbox:
             # this to run when it succeeds
             message.sentTo(c)
         
-        if not message.getSendingTo():
+        # If the sent timestamp with the timeout is passed by the current date,
+        # then timeout the message.
+        timeout: bool = (message.getMessage().getSent() + Message.TIMEOUT).timestamp() < datetime.now().timestamp()
+        if not message.getSendingTo() or timeout:
+            print("timeout: ", timeout)
             if message in Inbox._outbox:
                 Inbox._outbox.remove(message)
             ch: Chat = Inbox._findOrCreateChat(message.getChatID())
@@ -402,6 +406,7 @@ class Inbox:
                     raise Exception("OH NO")
         except Exception as e:
             print(e)
+            print(traceback.format_exc())
 
         finally:
             # close the connection
@@ -421,16 +426,16 @@ class Inbox:
         """
         MAX_TIME: int = 65535
         MAX_LOWER: int = -65536
-        RESEND_TIME: int = 60
+        RESEND_TIME: int = 5
         CHECK_INBOX_TIME: int = 1
         CHECK_CLI_TIME: int = 1
 
-        ttime: int = 0
+        time: float = 0
         
         try:
             while Inbox._isRunning:
                 await asyncio.sleep(0.1)
-                time: int = int(ttime / 10)
+                print(time)
 
                 # Handle resent heartbeat
                 if time % RESEND_TIME == 0 or Inbox._newOutbox:
@@ -449,7 +454,8 @@ class Inbox:
                 if time >= MAX_TIME:
                     time = MAX_LOWER
                 # Increment the time
-                ttime += 1
+                time = round(time + 0.1, 1)
         except Exception as e:
             print(e)
+            print(traceback.format_exc())
             Inbox._isRunning = False
