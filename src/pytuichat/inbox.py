@@ -5,15 +5,15 @@ import asyncio
 # import threading
 import traceback
 
-from message import *
-from contact import *
-from chat import *
-from spit import *
-from idiot import *
-from filereader import *
-from settings import *
-import debug
-import socketio
+from .message import *
+from .contact import *
+from .chat import *
+from .spit import *
+from .idiot import *
+from .filereader import *
+from .settings import *
+from .debug import *
+from .socketio import *
 
 # class _InboxOperation(Enum):
 #     SEND_MESSAGE = None
@@ -52,7 +52,7 @@ class Inbox:
         Inbox._isInit = True
 
         # If launching in debug, set the flag
-        debug.isDebug = isDebug
+        isDebug = isDebug
 
         Inbox._isRunning = True
 
@@ -97,21 +97,21 @@ class Inbox:
         """
         # Connect to the contacts server if possible
         # TODO handle debugs
-        if debug.isDebug:
+        if isDebug:
             return True
 
         try:
-            client: socket.socket = socketio.createMessageClient(contact.getUsername())
+            client: socket.socket = createMessageClient(contact.getUsername())
         except:
             return False
 
         spit: SPIT = SPIT(SPIT.Type.PING, "")
 
         # Send a message to the server
-        socketio.sendSocketIO(client, spit.toString())
+        sendSocketIO(client, spit.toString())
 
         # Receive a response from the server
-        response: str = socketio.recieveSocketIO(client)
+        response: str = recieveSocketIO(client)
         print(f'Ping response: {response}')
         client.close()
         return True
@@ -121,8 +121,8 @@ class Inbox:
         """
         Creates and returns the Msg socket.
         """
-        socketPath: str = socketio.buildMsgSocketPath(getpass.getuser())
-        s: socket.socket = socketio.createSocket(socketPath, socketio.MSGPERMS)
+        socketPath: str = buildMsgSocketPath(getpass.getuser())
+        s: socket.socket = createSocket(socketPath, MSGPERMS)
         return s
 
     @staticmethod
@@ -130,8 +130,8 @@ class Inbox:
         """
         Creates and returns the CLI socket.
         """
-        socketPath: str = socketio.buildCliSocketPath()
-        s: socket.socket = socketio.createSocket(socketPath, socketio.CLIPERMS)
+        socketPath: str = buildCliSocketPath()
+        s: socket.socket = createSocket(socketPath, CLIPERMS)
         return s
 
     @staticmethod
@@ -213,12 +213,12 @@ class Inbox:
             client: socket.socket
             print("b")
             try:
-                client = socketio.createMessageClient(c)
+                client = createMessageClient(c)
             except:
                 continue
 
-            socketio.sendSocketIO(client, spit.toString())
-            responseStr: str = socketio.recieveSocketIO(client)
+            sendSocketIO(client, spit.toString())
+            responseStr: str = recieveSocketIO(client)
             client.close()
 
             try:
@@ -272,7 +272,7 @@ class Inbox:
 
         try:
             # receive data from the client
-            dataStr: str = socketio.recieveSocketIO(connection)
+            dataStr: str = recieveSocketIO(connection)
 
             spit: SPIT = SPIT.fromString(dataStr)
 
@@ -290,7 +290,7 @@ class Inbox:
 
             # Send a response back to the client
             spitResponse: SPIT = SPIT(SPIT.Type.STATUS, response)
-            socketio.sendSocketIO(connection, spitResponse.toString())
+            sendSocketIO(connection, spitResponse.toString())
         finally:
             # close the connection
             connection.close()
@@ -334,7 +334,7 @@ class Inbox:
         try:
 
             # receive data from the client
-            dataStr: str = socketio.recieveSocketIO(connection)
+            dataStr: str = recieveSocketIO(connection)
             print(dataStr)
 
             idiot: IDIOT = IDIOT.fromString(dataStr)
@@ -350,7 +350,7 @@ class Inbox:
                     idiotResponse: IDIOT = IDIOT(
                         IDIOT_TYPE.LIST_CHATS,
                         json.dumps([Inbox._chats[t].getHeaderJsonObj() for t in Inbox._chats]))
-                    socketio.sendSocketIO(connection, idiotResponse.toString())
+                    sendSocketIO(connection, idiotResponse.toString())
 
                 case IDIOT_TYPE.SEND_MSG:
                     dm: DeliveryMessage = DeliveryMessage.fromJsonObj(json.loads(idiot.data))
@@ -365,7 +365,7 @@ class Inbox:
                     idiotResponse: IDIOT = IDIOT(
                         IDIOT_TYPE.SEND_MSG,
                         r)
-                    socketio.sendSocketIO(connection, idiotResponse.toString())
+                    sendSocketIO(connection, idiotResponse.toString())
 
                 case IDIOT_TYPE.READ_MSGS:
                     # Get data from recieved message
@@ -388,19 +388,19 @@ class Inbox:
 
                     idiotResponse: IDIOT = IDIOT(
                         IDIOT_TYPE.LIST_CHATS, json.dumps(responseJson))
-                    socketio.sendSocketIO(connection, idiotResponse.toString())
+                    sendSocketIO(connection, idiotResponse.toString())
 
                 case IDIOT_TYPE.PING:
                     idiotResponse: IDIOT = IDIOT(
                         IDIOT_TYPE.LIST_CHATS, "")
-                    socketio.sendSocketIO(connection, idiotResponse.toString())
+                    sendSocketIO(connection, idiotResponse.toString())
                 
                 case IDIOT_TYPE.CREATE_CHAT:
                     chatid: str = idiot.data
                     chat: Chat = Inbox._findOrCreateChat(chatid)
                     idiotResponse: IDIOT = IDIOT(
                         IDIOT_TYPE.CREATE_CHAT, chat.getUniqueID())
-                    socketio.sendSocketIO(connection, idiotResponse.toString())
+                    sendSocketIO(connection, idiotResponse.toString())
 
                 case _:
                     raise Exception("OH NO")

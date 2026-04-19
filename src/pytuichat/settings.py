@@ -1,4 +1,4 @@
-from filereader import FileReader
+from .filereader import FileReader
 
 class SettingsManager:
 

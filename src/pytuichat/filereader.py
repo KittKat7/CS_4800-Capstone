@@ -1,7 +1,8 @@
 import os
 import json
-from chat import *
-import debug
+
+from .chat import *
+from .debug import *
 
 class FileReader:
     @staticmethod
@@ -30,7 +31,7 @@ class FileReader:
         Reads the contents of requested file and returns JSON object, or "" if
         in debug mode.
         """
-        if debug.isDebug:
+        if isDebug:
             return ""
         with open(path, "r") as f:
             return f.read()
@@ -40,7 +41,7 @@ class FileReader:
         """
         Writes JSON object contents to the requested file, unless in debug mode.
         """
-        if debug.isDebug:
+        if isDebug:
             return
         with open(path, "w") as f:
             json.dump(contents, f, indent = 4)

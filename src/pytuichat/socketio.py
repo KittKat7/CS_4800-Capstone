@@ -1,10 +1,10 @@
 import os, socket
-import debug
 from concurrent.futures import ThreadPoolExecutor
 
-from filereader import FileReader
-from stupid import STUPID
-from idiot import IDIOT
+from .filereader import FileReader
+from .stupid import STUPID
+from .idiot import IDIOT
+from .debug import *
 
 # 0o prefix denotes octal
 MSGPERMS: int = 0o666
@@ -29,7 +29,7 @@ def createSocket(path: str, perms: int) -> socket.socket:
     Creates and returns a socket at the given file path. If the file already
     exists, unlink it, then create the socket.
     """
-    if debug.isDebug:
+    if isDebug:
         return socket.socket()
 
     # Check if socket file exists
@@ -55,7 +55,7 @@ def sendSocketIO(client: socket.socket, data: str):
     returns the recieved message back.
     """
     # TODO add to queue
-    if debug.isDebug:
+    if isDebug:
         return
 
     sl: list[STUPID] = STUPID.encodeStupid(data)

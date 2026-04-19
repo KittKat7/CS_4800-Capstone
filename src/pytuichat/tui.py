@@ -6,13 +6,13 @@ from textual.containers import Vertical
 from textual.screen import Screen
 from textual.binding import Binding
 
-import lang
-import cli
-from chat import Chat
-from idiot import IDIOT, IDIOT_TYPE
-import socketio
+from .lang import *
+from . import cli
+from .chat import Chat
+from .idiot import IDIOT, IDIOT_TYPE
+from .socketio import *
 
-lang.setLangMap("en_us")
+setLangMap("en_us")
 
 class _tui:
     activeChat: str = ""
@@ -76,7 +76,7 @@ class NewChatScreen(Screen[None]):
         Compose the page.
         """
         yield Header()
-        yield Label(lang.getString("lblCreateNewChat"))
+        yield Label(getString("lblCreateNewChat"))
         yield Input(placeholder="Type something here...", id="input")
         yield Footer()
 
@@ -89,7 +89,7 @@ class NewChatScreen(Screen[None]):
             return
 
         chatid: str = Chat.encodeParticipantID(inp.split(","))
-        chatid = socketio.singleCliCommand(IDIOT(IDIOT_TYPE.CREATE_CHAT, chatid)).data
+        chatid = singleCliCommand(IDIOT(IDIOT_TYPE.CREATE_CHAT, chatid)).data
         event.input.value = ""
         _tui.activeChat = chatid
         _tui.app.pop_screen()
@@ -139,7 +139,7 @@ class HelpScreen(Screen[None]):
         Compose the page.
         """
         yield Header()
-        yield TextArea(lang.getString("txtHelpTui"), read_only=True)
+        yield TextArea(getString("txtHelpTui"), read_only=True)
         yield Footer()
 
 
@@ -185,8 +185,8 @@ class ModesApp(App[None]):
 
     def on_mount(self) -> None:
         # self.switch_mode("dashboard")
-        self.title = lang.getString("lblTitle")
-        self.sub_title = lang.getString("lblSubTitle")
+        self.title = getString("lblTitle")
+        self.sub_title = getString("lblSubTitle")
         
         self.switch_mode("loading")
 

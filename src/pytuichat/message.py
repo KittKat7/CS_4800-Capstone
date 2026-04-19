@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from enum import Enum
 from typing import cast
 
-from contact import *
+from .contact import *
 
 class MessageStatus(Enum):
     """

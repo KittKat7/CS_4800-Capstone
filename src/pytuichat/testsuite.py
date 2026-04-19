@@ -1,9 +1,9 @@
 import unittest
 
-from filereader import *
-from inbox import Inbox
-from message import DeliveryMessage, Message
-from contact import Contact
+from .filereader import *
+from .inbox import Inbox
+from .message import DeliveryMessage, Message
+from .contact import Contact
 
 class TestMessageIO(unittest.TestCase):
     def testSendMessage(self):

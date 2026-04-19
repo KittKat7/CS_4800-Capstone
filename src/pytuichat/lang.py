@@ -1,5 +1,5 @@
 from types import ModuleType
-import langs.en_us as en_us
+from .langs import en_us
 
 class LangMap:
     """

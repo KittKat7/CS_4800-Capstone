@@ -1,5 +1,4 @@
 
-import sys
 import os
 import subprocess
 import getpass
@@ -7,11 +6,11 @@ import time
 import readline #type: ignore
 import traceback
 
-from inbox import *
-from filereader import *
-import lang
-from socketio import singleCliCommand
-from settings import SettingsManager as sm
+from .inbox import *
+from .filereader import *
+from .lang import *
+from .socketio import singleCliCommand
+from .settings import SettingsManager as sm
 
 def ping() -> bool:
     """
@@ -19,7 +18,7 @@ def ping() -> bool:
     """
     # Connect to the contacts server if possible
     try:
-        socketio.singleCliCommand(IDIOT(IDIOT_TYPE.PING, ""))
+        singleCliCommand(IDIOT(IDIOT_TYPE.PING, ""))
 
         return True
     except Exception:
@@ -31,7 +30,7 @@ def start() -> bool:
     else:
         print("Inbox starting")
         subprocess.Popen(
-            [sys.executable, "-c", "from inbox import Inbox; Inbox.runInbox()"],
+            ["pytuichat", "--runInbox"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             stdin=subprocess.DEVNULL,
@@ -46,8 +45,8 @@ def stop() -> bool:
     Returns true if able to ping the socket for the inbox
     """
     try:
-        client: socket.socket = socketio.createCliClient()
-        socketio.sendSocketIO(client, IDIOT(IDIOT_TYPE.STOP, "").toString())
+        client: socket.socket = createCliClient()
+        sendSocketIO(client, IDIOT(IDIOT_TYPE.STOP, "").toString())
         client.close()
         return True
     except Exception:
@@ -76,15 +75,15 @@ def _formatMessage(msg: Message) -> str:
     mStatus: str = ""
     match msg.getStatus():
         case MessageStatus.SENDING:
-            mStatus = lang.getString("mrkSending")
+            mStatus = getString("mrkSending")
         case MessageStatus.SENT:
-            mStatus = lang.getString("mrkSent")
+            mStatus = getString("mrkSent")
         case MessageStatus.TIMEOUT:
-            mStatus = lang.getString("mrkTimout")
+            mStatus = getString("mrkTimout")
         case MessageStatus.UNREAD:
-            mStatus = lang.getString("mrkUnread")
+            mStatus = getString("mrkUnread")
         case MessageStatus.READ:
-            mStatus = lang.getString("mrkRead")
+            mStatus = getString("mrkRead")
     strTime: str
     if sm.getSettingsManager().get24Hour():
         strTime: str = str(msg.getSent().strftime("%Y%m%d %H%M%p"))
@@ -122,7 +121,7 @@ def getMsgs(id: str, n: int = 100) -> str:
     TODO
     """
     if not ping():
-        return lang.getString("errNotStarted")
+        return getString("errNotStarted")
 
     id = Chat.encodeParticipantID(Chat.decodeParticipantID(id) + [getpass.getuser()])
     
@@ -138,7 +137,7 @@ def sendMsg(id: str, msg: str) -> str:
     TODO
     """
     if not ping():
-        return lang.getString("errNotStarted")
+        return getString("errNotStarted")
     
     id = Chat.encodeParticipantID(Chat.decodeParticipantID(id) + [getpass.getuser()])
     dm: DeliveryMessage = DeliveryMessage(
@@ -157,7 +156,7 @@ def runcli(args: list[str]) -> None:
     """
     Runs once for the CLI. This handles CLI commands from the user.
     """
-    lang.setLangMap("en_us")
+    setLangMap("en_us")
 
     # Initiate variables
     running: bool = True
@@ -167,9 +166,9 @@ def runcli(args: list[str]) -> None:
     # the app running in singular or interactive mode.
     cliArgs: bool = len(args) > 0
     if not cliArgs:
-        print(lang.getString("pptInteractive"))
+        print(getString("pptInteractive"))
     else:
-        print(lang.getString("pptSingular"))
+        print(getString("pptSingular"))
     
     # Start the running loop
     while running:
@@ -178,7 +177,7 @@ def runcli(args: list[str]) -> None:
             inp = args
             running = False
         else:
-            inp = input(lang.getString("pptConsole")).split(" ")
+            inp = input(getString("pptConsole")).split(" ")
         
         # Handle the given command
         try:
@@ -193,7 +192,7 @@ def runcli(args: list[str]) -> None:
                 
                 # Handle exit command
                 case "exit":
-                    print(lang.getString("pptExiting"))
+                    print(getString("pptExiting"))
                     running = False
                     continue
 
@@ -235,7 +234,7 @@ def runcli(args: list[str]) -> None:
                     print("UNKNOWN: " + inp[0])
             
             # Add a line for spacing
-            print(lang.getString("pptEndReq"))
+            print(getString("pptEndReq"))
             print()
         except Exception as e:
             print(e)

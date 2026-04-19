@@ -1,8 +1,8 @@
 from typing import cast
 import getpass
 
-from message import *
-from contact import *
+from .message import *
+from .contact import *
 
 class Chat:
     def __init__(self, contacts: list[str]):

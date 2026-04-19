@@ -1,0 +1,29 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "pytuichat"
+version = "0.0.1"
+authors = [
+  { name="KittKat", email="kittkat@kittkat.xyz" },
+]
+description = "A terminal based messaging app for users on the same server"
+readme = "README.md"
+requires-python = ">=3.10"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+license = "GPL-3.0-or-later"
+license-files = ["LICEN[CS]E*"]
+dependencies = [
+  "textual>=8.2.1"
+]
+
+[project.urls]
+Homepage = "https://github.com/KittKat7/CS_4800-Capstone"
+Issues = "https://github.com/KittKat7/CS_4800-Capston/issues"
+
+[project.scripts]
+pytuichat = "pytuichat.entrypoint:run"
