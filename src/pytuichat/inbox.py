@@ -201,7 +201,7 @@ class Inbox:
         send the message to contacts when possible.
         """
         # if sending to self...
-        if getpass.getuser() in message.getChatID():
+        if getpass.getuser() in message.getSendingTo():
             message.sentTo(getpass.getuser())
 
         sendTo: list[str] = message.getSendingTo()

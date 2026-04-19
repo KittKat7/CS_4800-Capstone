@@ -1,5 +1,7 @@
 import os, socket
 import debug
+from concurrent.futures import ThreadPoolExecutor
+
 from filereader import FileReader
 from stupid import STUPID
 from idiot import IDIOT
@@ -7,7 +9,7 @@ from idiot import IDIOT
 # 0o prefix denotes octal
 MSGPERMS: int = 0o666
 CLIPERMS: int = 0o600
-
+SOCKETIO_TIMEOUT: int = 5
 
 def buildMsgSocketPath(username: str) -> str:
     """
@@ -82,7 +84,10 @@ def recieveSocketIO(socket: socket.socket) -> str:
             continue
 
         # Recieve the rest of the packet
-        pbytes: bytes = socket.recv(plen)
+        pbytes: bytes
+        with ThreadPoolExecutor() as executor:
+            future = executor.submit(socket.recv, plen)
+            pbytes = future.result(timeout=SOCKETIO_TIMEOUT)
 
         # Make the packet object and add to list
         p: STUPID = STUPID.fromBytes(plenb + pbytes)
