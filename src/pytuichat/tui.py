@@ -145,6 +145,39 @@ class HelpScreen(Screen[None]):
         yield TextArea(getString("txtHelpTui"), read_only=True)
         yield Footer()
 
+class SettingsScreen(Screen[None]):
+    """
+    The screen that allows the user to view and change their settings.
+    """
+    
+    CSS = """
+    #label { width: 100%; text-align: center; }
+    """
+
+    def compose(self) -> ComposeResult:
+        yield Header()
+        yield Label("Options")
+        options: dict[str, bool] = cli.showSettings()
+        yield Vertical(
+            *[
+                Button(
+                    f"{k}: {options.get(k)}",
+                    name=k,
+                    classes="setbtn",
+                    compact=True,
+                )
+            for k in options.keys()
+            ]
+        )
+        yield Footer()
+    
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.name == "show_nicknames":
+            cli.updateNicks(not cli.showSettings()["show_nicknames"])
+        elif event.button.name == "24_hour_time":
+            cli.updateTwentyFour(not cli.showSettings()["24_hour_time"])
+        _tui.app.pop_screen()
+        _tui.app.push_screen(SettingsScreen())
 
 class ModesApp(App[None]):
     """
@@ -161,6 +194,7 @@ class ModesApp(App[None]):
         Binding("ctrl+q", "quit", "Quit", show=True),
         Binding("ctrl+b", "back", "Back", show=True),
         Binding("ctrl+n", "newc", "New Chat", show=True),
+        Binding("ctrl+o", "options", "Options", show=True),
         Binding("h", "help", "Help", show=True),
     ]
 
@@ -185,6 +219,10 @@ class ModesApp(App[None]):
     async def action_newc(self) -> None:
         if type(self.screen_stack[-1]) == DashboardScreen:
             self.push_screen(NewChatScreen())
+    
+    async def action_options(self) -> None:
+        if type(self.screen_stack[-1]) == DashboardScreen:
+            self.push_screen(SettingsScreen())  
 
     def on_mount(self) -> None:
         # self.switch_mode("dashboard")
