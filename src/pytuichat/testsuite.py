@@ -1,9 +1,9 @@
 import unittest
 
-from .filereader import *
-from .inbox import Inbox
-from .message import DeliveryMessage, Message
-from .contact import Contact
+from pytuichat.filereader import *
+from pytuichat.inbox import Inbox
+from pytuichat.message import DeliveryMessage, Message
+from pytuichat.contact import Contact
 
 class TestMessageIO(unittest.TestCase):
     def testSendMessage(self):

@@ -1,8 +1,8 @@
 import sys
 
-from .cli import runcli
-from .tui import runtui
-from .inbox import Inbox
+from pytuichat.cli import runcli
+from pytuichat.tui import runtui
+from pytuichat.inbox import Inbox
 
 def run():
     args = sys.argv[1:]

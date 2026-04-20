@@ -1,10 +1,10 @@
 import os, socket
 from concurrent.futures import ThreadPoolExecutor
 
-from .filereader import FileReader
-from .stupid import STUPID
-from .idiot import IDIOT
-from .debug import *
+from pytuichat.filereader import FileReader
+from pytuichat.stupid import STUPID
+from pytuichat.idiot import IDIOT
+from pytuichat.debug import *
 
 # 0o prefix denotes octal
 MSGPERMS: int = 0o666

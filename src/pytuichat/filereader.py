@@ -1,8 +1,8 @@
 import os
 import json
 
-from .chat import *
-from .debug import *
+from pytuichat.chat import *
+from pytuichat.debug import *
 
 class FileReader:
     @staticmethod

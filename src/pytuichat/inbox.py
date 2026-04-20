@@ -5,15 +5,15 @@ import asyncio
 # import threading
 import traceback
 
-from .message import *
-from .contact import *
-from .chat import *
-from .spit import *
-from .idiot import *
-from .filereader import *
-from .settings import *
-from .debug import *
-from .socketio import *
+from pytuichat.message import *
+from pytuichat.contact import *
+from pytuichat.chat import *
+from pytuichat.spit import *
+from pytuichat.idiot import *
+from pytuichat.filereader import *
+from pytuichat.settings import *
+from pytuichat.debug import *
+from pytuichat.socketio import *
 
 # class _InboxOperation(Enum):
 #     SEND_MESSAGE = None

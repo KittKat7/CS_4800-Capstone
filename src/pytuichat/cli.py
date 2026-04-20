@@ -6,11 +6,11 @@ import time
 import readline #type: ignore
 import traceback
 
-from .inbox import *
-from .filereader import *
-from .lang import *
-from .socketio import singleCliCommand
-from .settings import SettingsManager as sm
+from pytuichat.inbox import *
+from pytuichat.filereader import *
+from pytuichat.lang import *
+from pytuichat.socketio import singleCliCommand
+from pytuichat.settings import SettingsManager as sm
 
 def ping() -> bool:
     """

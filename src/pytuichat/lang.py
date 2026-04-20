@@ -1,5 +1,5 @@
 from types import ModuleType
-from .langs import en_us
+from pytuichat.langs import en_us
 
 class LangMap:
     """

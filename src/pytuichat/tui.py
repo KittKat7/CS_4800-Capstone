@@ -6,11 +6,11 @@ from textual.containers import Vertical
 from textual.screen import Screen
 from textual.binding import Binding
 
-from .lang import *
-from . import cli
-from .chat import Chat
-from .idiot import IDIOT, IDIOT_TYPE
-from .socketio import *
+from pytuichat.lang import *
+from pytuichat import cli
+from pytuichat.chat import Chat
+from pytuichat.idiot import IDIOT, IDIOT_TYPE
+from pytuichat.socketio import *
 
 setLangMap("en_us")
 
