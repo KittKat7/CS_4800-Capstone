@@ -114,7 +114,7 @@ def updateTwentyFour(twentyfour: bool):
     Update the settings manager and user's settings file with new preference.
     """
     manager = sm.getSettingsManager()
-    manager.setShowNicknames(twentyfour)
+    manager.set24Hour(twentyfour)
 
 def getMsgs(id: str, n: int = 100) -> str:
     """
@@ -221,15 +221,16 @@ def runcli(args: list[str]) -> None:
                 case "settings":
                     if len(inp) == 1:
                         print(showSettings())
-                    elif inp[1] == "24hour":
+                    elif len(inp) != 3:
+                        print("TODO HELP STRING SETTINGS")
+                    elif inp[1] == "24hour" and inp[2] in ["true", "false"]:
                         print("Updating 24_hour_time")
-                        updateTwentyFour(bool(inp[2]))
-                    elif inp[1] == "nicks":
+                        updateTwentyFour(inp[2] == "true")
+                    elif inp[1] == "nicks" and inp[2] in ["true", "false"]:
                         print("Updating show_nicknames")
-                        updateNicks(bool(inp[2]))
+                        updateNicks(inp[2] == "true")
                     else:
                         print("TODO HELP STRING SETTINGS")
-                    print(inp[1], inp[2])
                 case _:
                     print("UNKNOWN: " + inp[0])
             
