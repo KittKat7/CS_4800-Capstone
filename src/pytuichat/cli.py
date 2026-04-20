@@ -5,6 +5,7 @@ import getpass
 import time
 import readline #type: ignore
 import traceback
+import sys
 
 from pytuichat.inbox import *
 from pytuichat.filereader import *
@@ -30,7 +31,7 @@ def start() -> bool:
     else:
         print("Inbox starting")
         subprocess.Popen(
-            ["pytuichat", "--runInbox"],
+            [sys.executable, os.path.dirname(__file__) + "/dev_entrypoint.py", "--runInbox"],
             stdout=subprocess.DEVNULL,
             stderr=subprocess.DEVNULL,
             stdin=subprocess.DEVNULL,
@@ -152,6 +153,10 @@ def sendMsg(id: str, msg: str) -> str:
 
     return response.data
 
+def createChat(inp: str) -> str:
+    chatid: str = Chat.encodeParticipantID("".join(inp.split()).split(","))
+    return singleCliCommand(IDIOT(IDIOT_TYPE.CREATE_CHAT, chatid)).data
+
 def runcli(args: list[str]) -> None:
     """
     Runs once for the CLI. This handles CLI commands from the user.
@@ -218,6 +223,8 @@ def runcli(args: list[str]) -> None:
                 case "send":
                     tf = sendMsg(inp[1], inp[2])
                     print("Message send:", tf)
+                case "create":
+                    print(createChat(inp[1]))
                 case "settings":
                     if len(inp) == 1:
                         print(showSettings())

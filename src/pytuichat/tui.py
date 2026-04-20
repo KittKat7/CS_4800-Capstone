@@ -9,7 +9,6 @@ from textual.binding import Binding
 from pytuichat.lang import *
 from pytuichat import cli
 from pytuichat.chat import Chat
-from pytuichat.idiot import IDIOT, IDIOT_TYPE
 from pytuichat.socketio import *
 
 setLangMap("en_us")
@@ -17,6 +16,12 @@ setLangMap("en_us")
 class _tui:
     activeChat: str = ""
     app: App[None]
+
+class ErrorMsgScreen(Screen[None]):
+    def __init__(self, msg: str):
+        self.msg = msg
+    def compose(self) -> ComposeResult:
+        yield Label(self.msg)
 
 class LoadingScreen(Screen[None]):
     """
@@ -88,13 +93,11 @@ class NewChatScreen(Screen[None]):
         if not inp:
             return
 
-        chatid: str = Chat.encodeParticipantID(inp.split(","))
-        chatid = singleCliCommand(IDIOT(IDIOT_TYPE.CREATE_CHAT, chatid)).data
+        chatid = cli.createChat(inp)
         event.input.value = ""
         _tui.activeChat = chatid
         _tui.app.pop_screen()
         _tui.app.push_screen(MessageScreen())
-        # self.updateMessages()
 
 class MessageScreen(Screen[None]):
     """

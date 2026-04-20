@@ -123,5 +123,6 @@ def singleCliCommand(idiot: IDIOT) -> IDIOT:
     sendSocketIO(client, idiot.toString())
 
     strt: str = recieveSocketIO(client)
+    print(strt)
 
     return IDIOT.fromString(strt)

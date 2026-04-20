@@ -160,14 +160,13 @@ class Inbox:
         if chatID in Inbox._chats:
             return Inbox._chats[chatID]
 
-        # TODO optimize
         # No chat was found, create a new one and add it to the list
         cl: list[str] = Chat.decodeParticipantID(chatID)
         for c in cl:
             Inbox._findOrCreateContact(c)
         chh: Chat = Chat(cl)
         # Save chat persistantly
-        Inbox._chats[chatID] = chh
+        Inbox._chats[chh.getUniqueID()] = chh
         FileReader.updateChat(chh)
         # Return new chat
         return chh
@@ -398,6 +397,7 @@ class Inbox:
                 case IDIOT_TYPE.CREATE_CHAT:
                     chatid: str = idiot.data
                     chat: Chat = Inbox._findOrCreateChat(chatid)
+                    FileReader.updateChat(chat)
                     idiotResponse: IDIOT = IDIOT(
                         IDIOT_TYPE.CREATE_CHAT, chat.getUniqueID())
                     sendSocketIO(connection, idiotResponse.toString())
@@ -435,7 +435,6 @@ class Inbox:
         try:
             while Inbox._isRunning:
                 await asyncio.sleep(0.1)
-                print(time)
 
                 # Handle resent heartbeat
                 if time % RESEND_TIME == 0 or Inbox._newOutbox:
