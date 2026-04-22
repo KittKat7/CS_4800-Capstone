@@ -339,13 +339,7 @@ class Inbox:
         print('Connection from', str(connection))
 
         try:
-            dataStr: str
-            try:
-                connection.recv(STUPID.PACKET_SIZE, socket.MSG_PEEK)
-            except:
-                return
-            # receive data from the client
-            dataStr = recieveSocketIO(connection)
+            dataStr: str = recieveSocketIO(connection)
 
             print(dataStr)
 
