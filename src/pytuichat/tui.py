@@ -19,6 +19,8 @@ class _tui:
     activeChat: str = ""
     app: App[None]
     client: socket.socket
+    running: bool
+    ut: threading.Thread
 
 class ErrorMsgScreen(Screen[None]):
     def __init__(self, msg: str):
@@ -224,6 +226,7 @@ class ModesApp(App[None]):
         Quit the app.
         """
         _tui.client.close()
+        _tui.running = False
         return await super().action_quit()
 
     async def action_kill(self) -> None:
@@ -247,6 +250,8 @@ class ModesApp(App[None]):
         self.switch_mode("loading")
 
         _tui.client = cli.start()
+        _tui.running = True
+        _tui.ut.start()
         self.switch_mode("dashboard")
 
 def runtui() -> None:
@@ -254,20 +259,26 @@ def runtui() -> None:
     Run the TUI version of the app.
     """
     _tui.app = ModesApp()
-    ut: threading.Thread = threading.Thread(target=checkUpdates)
-    ut.start()
+    _tui.ut = threading.Thread(target=checkUpdates)
     _tui.app.run()
 
 def checkUpdates() -> None:
     """
     While true, check for updates sent by the inbox.
     """
-    while True:
-        time.sleep(0.1)
-        if hasData(_tui.client):
-            data: str = IDIOT.fromString(recieveSocketIO(_tui.client)).data
-            if type(_tui.app.screen_stack[-1]) == DashboardScreen:
-                _tui.app.screen_stack[-1].compose()
-            elif type(_tui.app.screen_stack[-1]) == MessageScreen:
-                if data == _tui.activeChat:
-                    _tui.app.screen_stack[-1].updateMessages()
+    try:
+        while _tui.running:
+            time.sleep(0.1)
+            if hasData(_tui.client):
+                data: str = IDIOT.fromString(recieveSocketIO(_tui.client)).data
+                print(data)
+                if type(_tui.app.screen_stack[-1]) == DashboardScreen:
+                    _tui.app.screen_stack[-1].compose()
+                elif type(_tui.app.screen_stack[-1]) == MessageScreen:
+                    if data == _tui.activeChat:
+                        _tui.app.screen_stack[-1].updateMessages()
+                with open("./tmpfile", "a") as f:
+                    f.write(data)
+    except Exception as e:
+        with open("./tmpfile", "a") as f:
+            f.write(str(e))
