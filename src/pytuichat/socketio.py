@@ -120,7 +120,6 @@ def singleCliCommand(client: socket.socket | None, idiot: IDIOT) -> IDIOT:
     sendSocketIO(client, idiot.toString())
 
     strt: str = recieveSocketIO(client)
-    print(strt)
 
     if newSocket:
         client.close()

@@ -58,7 +58,7 @@ def _formatChats(chats: list[Chat]) -> str:
     """
     s: str = ""
     for c in chats:
-        s += f"{c.getDisplayUniqueID()} - {c.getNumUnread()}; "
+        s += f"{c.getDisplayUniqueID()} - {c.getNumUnread()}\n"
     return s
 
 def listChats(client: socket.socket) -> list[Chat]:
@@ -66,7 +66,6 @@ def listChats(client: socket.socket) -> list[Chat]:
     Returns a list of chats and info about the chats.
     """
     response: IDIOT = singleCliCommand(client, IDIOT(IDIOT_TYPE.LIST_CHATS, ""))
-    print(client)
     return [Chat.fromJsonObj(t) for t in json.loads(response.data)]
 
 def _formatMessage(msg: Message) -> str:
