@@ -66,6 +66,7 @@ def listChats(client: socket.socket) -> list[Chat]:
     Returns a list of chats and info about the chats.
     """
     response: IDIOT = singleCliCommand(client, IDIOT(IDIOT_TYPE.LIST_CHATS, ""))
+    print(client)
     return [Chat.fromJsonObj(t) for t in json.loads(response.data)]
 
 def _formatMessage(msg: Message) -> str:
@@ -203,7 +204,10 @@ def runcli(args: list[str]) -> None:
                     continue
 
                 case "start":
-                    if start():
+                    cl = start()
+                    if client:
+                        client.close()
+                        client = cl
                         print("Inbox has started")
                     else:
                         print("Inbox failed to start")
@@ -239,6 +243,11 @@ def runcli(args: list[str]) -> None:
                         updateNicks(inp[2] == "true")
                     else:
                         print("TODO HELP STRING SETTINGS")
+                case "tmp":
+                    sendSocketIO(client, IDIOT(IDIOT_TYPE.PING, "").toString())
+                    print(recieveSocketIO(client))
+                    sendSocketIO(client, IDIOT(IDIOT_TYPE.PING, "").toString())
+                    print(recieveSocketIO(client))
                 case _:
                     print(getString("pptUnknown") + inp[0])
             

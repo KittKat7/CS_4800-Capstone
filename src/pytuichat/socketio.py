@@ -1,6 +1,4 @@
 import os, socket
-from concurrent.futures import ThreadPoolExecutor
-
 from pytuichat.filereader import FileReader
 from pytuichat.stupid import STUPID
 from pytuichat.idiot import IDIOT
@@ -84,10 +82,7 @@ def recieveSocketIO(socket: socket.socket) -> str:
             continue
 
         # Recieve the rest of the packet
-        pbytes: bytes
-        with ThreadPoolExecutor() as executor:
-            future = executor.submit(socket.recv, plen)
-            pbytes = future.result(timeout=SOCKETIO_TIMEOUT)
+        pbytes: bytes = socket.recv(plen)
 
         # Make the packet object and add to list
         p: STUPID = STUPID.fromBytes(plenb + pbytes)
@@ -119,11 +114,15 @@ def createCliClient() -> socket.socket:
     return client
 
 def singleCliCommand(client: socket.socket | None, idiot: IDIOT) -> IDIOT:
-    if not client:
+    newSocket: bool = not client
+    if newSocket:
         client = createCliClient()
     sendSocketIO(client, idiot.toString())
 
     strt: str = recieveSocketIO(client)
     print(strt)
+
+    if newSocket:
+        client.close()
 
     return IDIOT.fromString(strt)

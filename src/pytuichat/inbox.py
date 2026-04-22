@@ -31,6 +31,7 @@ class Inbox:
     _outbox: list[DeliveryMessage]
     _newOutbox: list[DeliveryMessage]
     _settingsManager: SettingsManager
+    _connections: list[socket.socket]
 
     # _operationQueue: list[_InboxOperation] = []
 
@@ -84,6 +85,7 @@ class Inbox:
         # Inbox._msgThread.start()
         # Inbox._cliThread.start()
         print("Inbox started")
+        Inbox._connections = []
         Inbox._startHeartbeat()
 
     @staticmethod
@@ -307,33 +309,43 @@ class Inbox:
         FileReader.updateChat(c)
 
     @staticmethod
-    def _cliRecieved() -> None:
-        """
-        Basically a while true loop to handle all cli commands.
-        """
+    def _cliCheck() -> None:
         try:
-            while Inbox._isRunning:
-                Inbox._handleCliRecieved()
+            connection = Inbox._cliSocket.accept()[0]
+            connection.setblocking(False)
+            Inbox._connections.append(connection)
         except:
-            Inbox._isRunning = False
+            ""
+
+        rml: list[socket.socket] = []
+        for c in Inbox._connections:
+            try:
+                Inbox._handleCliRecieved(c)
+            except:
+                rml.append(c)
+        for c in rml:
+            Inbox._connections.remove(c)
+
+        print(Inbox._connections)
 
     @staticmethod
-    def _handleCliRecieved() -> None:
+    def _handleCliRecieved(connection: socket.socket) -> None:
         """
         Waits and handles connections from the CLI.
         """
 
         # Wait for in inbound connection
-        try:
-            connection = Inbox._cliSocket.accept()[0]
-        except:
-            return
         print('Connection from', str(connection))
 
         try:
-
+            dataStr: str
+            try:
+                connection.recv(STUPID.PACKET_SIZE, socket.MSG_PEEK)
+            except:
+                return
             # receive data from the client
-            dataStr: str = recieveSocketIO(connection)
+            dataStr = recieveSocketIO(connection)
+
             print(dataStr)
 
             idiot: IDIOT = IDIOT.fromString(dataStr)
@@ -405,12 +417,9 @@ class Inbox:
                 case _:
                     raise Exception("OH NO")
         except Exception as e:
+            Inbox._connections.remove(connection)
             print(e)
             print(traceback.format_exc())
-
-        finally:
-            # close the connection
-            connection.close()
 
     @staticmethod
     def _startHeartbeat() -> None:
@@ -447,7 +456,7 @@ class Inbox:
                     Inbox._handleMsgConnect()
                 
                 if time % CHECK_CLI_TIME == 0:
-                    Inbox._handleCliRecieved()
+                    Inbox._cliCheck()
 
                 # If time passes MAX_TIME reset the time to 0
                 if time >= MAX_TIME:
