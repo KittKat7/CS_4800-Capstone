@@ -118,8 +118,9 @@ def createCliClient() -> socket.socket:
     client.connect(path)
     return client
 
-def singleCliCommand(idiot: IDIOT) -> IDIOT:
-    client: socket.socket = createCliClient()
+def singleCliCommand(client: socket.socket | None, idiot: IDIOT) -> IDIOT:
+    if not client:
+        client = createCliClient()
     sendSocketIO(client, idiot.toString())
 
     strt: str = recieveSocketIO(client)

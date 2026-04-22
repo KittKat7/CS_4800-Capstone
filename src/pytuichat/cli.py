@@ -19,15 +19,15 @@ def ping() -> bool:
     """
     # Connect to the contacts server if possible
     try:
-        singleCliCommand(IDIOT(IDIOT_TYPE.PING, ""))
+        singleCliCommand(None, IDIOT(IDIOT_TYPE.PING, ""))
 
         return True
     except Exception:
         return False
 
-def start() -> bool:
+def start() -> socket.socket:
     if ping():
-        return True
+        return createCliClient()
     else:
         print("Inbox starting")
         subprocess.Popen(
@@ -39,14 +39,13 @@ def start() -> bool:
             close_fds=True,
         )
         time.sleep(1)
-        return ping()
+        return createCliClient()
 
-def stop() -> bool:
+def stop(client: socket.socket) -> bool:
     """
     Returns true if able to ping the socket for the inbox
     """
     try:
-        client: socket.socket = createCliClient()
         sendSocketIO(client, IDIOT(IDIOT_TYPE.STOP, "").toString())
         client.close()
         return True
@@ -62,11 +61,11 @@ def _formatChats(chats: list[Chat]) -> str:
         s += f"{c.getDisplayUniqueID()} - {c.getNumUnread()}; "
     return s
 
-def listChats() -> list[Chat]:
+def listChats(client: socket.socket) -> list[Chat]:
     """
     Returns a list of chats and info about the chats.
     """
-    response: IDIOT = singleCliCommand(IDIOT(IDIOT_TYPE.LIST_CHATS, ""))
+    response: IDIOT = singleCliCommand(client, IDIOT(IDIOT_TYPE.LIST_CHATS, ""))
     return [Chat.fromJsonObj(t) for t in json.loads(response.data)]
 
 def _formatMessage(msg: Message) -> str:
@@ -117,7 +116,7 @@ def updateTwentyFour(twentyfour: bool):
     manager = sm.getSettingsManager()
     manager.set24Hour(twentyfour)
 
-def getMsgs(id: str, n: int = 100) -> str:
+def getMsgs(client: socket.socket, id: str, n: int = 100) -> str:
     """
     TODO
     """
@@ -126,14 +125,14 @@ def getMsgs(id: str, n: int = 100) -> str:
 
     id = Chat.encodeParticipantID(Chat.decodeParticipantID(id) + [getpass.getuser()])
     
-    response: IDIOT = singleCliCommand(IDIOT(IDIOT_TYPE.READ_MSGS, json.dumps({"id": id, "n": n})))
+    response: IDIOT = singleCliCommand(client, IDIOT(IDIOT_TYPE.READ_MSGS, json.dumps({"id": id, "n": n})))
     
     msgStr: str = ""
     for m in json.loads(response.data):
         msgStr += _formatMessage(Message.fromJsonObj(m)) + "\n"
     return msgStr
 
-def sendMsg(id: str, msg: str) -> str:
+def sendMsg(client: socket.socket, id: str, msg: str) -> str:
     """
     TODO
     """
@@ -149,19 +148,21 @@ def sendMsg(id: str, msg: str) -> str:
         Chat.decodeParticipantID(id),
         id
     )
-    response: IDIOT = singleCliCommand(IDIOT(IDIOT_TYPE.SEND_MSG, json.dumps(dm.toJsonObj())))
+    response: IDIOT = singleCliCommand(client, IDIOT(IDIOT_TYPE.SEND_MSG, json.dumps(dm.toJsonObj())))
 
     return response.data
 
-def createChat(inp: str) -> str:
+def createChat(client: socket.socket, inp: str) -> str:
     chatid: str = Chat.encodeParticipantID("".join(inp.split()).split(","))
-    return singleCliCommand(IDIOT(IDIOT_TYPE.CREATE_CHAT, chatid)).data
+    return singleCliCommand(client, IDIOT(IDIOT_TYPE.CREATE_CHAT, chatid)).data
 
 def runcli(args: list[str]) -> None:
     """
     Runs once for the CLI. This handles CLI commands from the user.
     """
     setLangMap("en_us")
+    client: socket.socket
+    client = start()
 
     # Initiate variables
     running: bool = True
@@ -212,19 +213,19 @@ def runcli(args: list[str]) -> None:
                     else:
                         print("Inbox is NOT running")
                 case "stop":
-                    stop()
+                    stop(client)
                     print("Inbox has stopped")
                 case "ls" | "list":
-                    chats = listChats()
+                    chats = listChats(client)
                     print(_formatChats(chats))
                 case "read":
-                    chat = getMsgs(inp[1], int(inp[2] if len(inp) >= 3 else 10))
+                    chat = getMsgs(client, inp[1], int(inp[2] if len(inp) >= 3 else 10))
                     print(chat)
                 case "send":
-                    tf = sendMsg(inp[1], inp[2])
+                    tf = sendMsg(client, inp[1], inp[2])
                     print("Message send:", tf)
                 case "create":
-                    print(createChat(inp[1]))
+                    print(createChat(client, inp[1]))
                 case "settings":
                     if len(inp) == 1:
                         print(showSettings())
