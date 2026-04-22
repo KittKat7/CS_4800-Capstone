@@ -292,7 +292,9 @@ class Inbox:
         # TODO
         print("Recieved message: " + str(dmessage.getMessage().getContent()))
         c: Chat = Inbox._findOrCreateChat(dmessage.getChatID())
-        c.updateMessageHistory(dmessage.getMessage())
+        msg: Message = dmessage.getMessage()
+        msg.updateStatus(MessageStatus.UNREAD)
+        c.updateMessageHistory(msg)
         Inbox._updates.append(c.getUniqueID())
         FileReader.updateChat(c)
 
