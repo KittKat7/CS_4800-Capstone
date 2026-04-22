@@ -125,3 +125,17 @@ def singleCliCommand(client: socket.socket | None, idiot: IDIOT) -> IDIOT:
         client.close()
 
     return IDIOT.fromString(strt)
+
+def hasData(client: socket.socket) -> bool:
+    """
+    Returns true if still connected and has data, false if there is no data. If
+    not connected, throw an exception.
+    """
+    d: bytes
+    try:
+        d = client.recv(STUPID.PACKET_SIZE, socket.MSG_DONTWAIT | socket.MSG_PEEK)
+    except:
+        return False
+    if not d:
+        raise Exception("No data")
+    return True

@@ -320,7 +320,8 @@ class Inbox:
         rml: list[socket.socket] = []
         for c in Inbox._connections:
             try:
-                Inbox._handleCliRecieved(c)
+                if hasData(c):
+                    Inbox._handleCliRecieved(c)
             except:
                 rml.append(c)
         for c in rml:
@@ -403,7 +404,7 @@ class Inbox:
 
                 case IDIOT_TYPE.PING:
                     idiotResponse: IDIOT = IDIOT(
-                        IDIOT_TYPE.LIST_CHATS, "")
+                        IDIOT_TYPE.PING, "")
                     sendSocketIO(connection, idiotResponse.toString())
                 
                 case IDIOT_TYPE.CREATE_CHAT:
