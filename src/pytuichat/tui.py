@@ -16,6 +16,7 @@ setLangMap("en_us")
 class _tui:
     activeChat: str = ""
     app: App[None]
+    client: socket.socket
 
 class ErrorMsgScreen(Screen[None]):
     def __init__(self, msg: str):
@@ -51,7 +52,7 @@ class DashboardScreen(Screen[None]):
         Compose the page.
         """
         yield Header()
-        chts: list[Chat] = cli.listChats()
+        chts: list[Chat] = cli.listChats(_tui.client)
         yield Vertical(
             *[
                 Button(
@@ -93,7 +94,7 @@ class NewChatScreen(Screen[None]):
         if not inp:
             return
 
-        chatid = cli.createChat(inp)
+        chatid = cli.createChat(_tui.client, inp)
         event.input.value = ""
         _tui.activeChat = chatid
         _tui.app.pop_screen()
@@ -125,12 +126,12 @@ class MessageScreen(Screen[None]):
         """
         Handle input when the user presses Enter.
         """
-        cli.sendMsg(_tui.activeChat, event.input.value)
+        cli.sendMsg(_tui.client, _tui.activeChat, event.input.value)
         event.input.value = ""
         self.updateMessages()
 
     def updateMessages(self) -> None:
-        self.content.text = cli.getMsgs(_tui.activeChat)
+        self.content.text = cli.getMsgs(_tui.client, _tui.activeChat)
 
 class HelpScreen(Screen[None]):
     """
@@ -213,7 +214,7 @@ class ModesApp(App[None]):
     
     async def action_kill(self) -> None:
         # return await super().action_quit()
-        cli.stop()
+        cli.stop(_tui.client)
         return await super().action_quit()
     
     async def action_newc(self) -> None:
@@ -231,8 +232,8 @@ class ModesApp(App[None]):
         
         self.switch_mode("loading")
 
-        if cli.start():
-            self.switch_mode("dashboard")
+        _tui.client = cli.start()
+        self.switch_mode("dashboard")
 
 def runtui() -> None:
     _tui.app = ModesApp()
