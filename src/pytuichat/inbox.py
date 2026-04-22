@@ -32,12 +32,7 @@ class Inbox:
     _newOutbox: list[DeliveryMessage]
     _settingsManager: SettingsManager
     _connections: list[socket.socket]
-
-    # _operationQueue: list[_InboxOperation] = []
-
-    # TODO cleanup
-    # _msgThread: threading.Thread
-    # _cliThread: threading.Thread
+    _updates: list[str] # a list of ids for chats that have updates
 
     _msgSocket: socket.socket
     _cliSocket: socket.socket
@@ -75,17 +70,9 @@ class Inbox:
         Inbox._cliSocket.listen(1)
         Inbox._cliSocket.setblocking(False)
 
-        # TODO cleanup
-        # Inbox._cliThread = threading.Thread(
-        #     target = Inbox._cliRecieved
-        # )
-        # Inbox._msgThread = threading.Thread(
-        #     target = Inbox._startHeartbeat
-        # )
-        # Inbox._msgThread.start()
-        # Inbox._cliThread.start()
         print("Inbox started")
         Inbox._connections = []
+        Inbox._updates = []
         Inbox._startHeartbeat()
 
     @staticmethod
@@ -306,6 +293,7 @@ class Inbox:
         print("Recieved message: " + str(dmessage.getMessage().getContent()))
         c: Chat = Inbox._findOrCreateChat(dmessage.getChatID())
         c.updateMessageHistory(dmessage.getMessage())
+        Inbox._updates.append(c.getUniqueID())
         FileReader.updateChat(c)
 
     @staticmethod
@@ -415,6 +403,16 @@ class Inbox:
             Inbox._connections.remove(connection)
             print(e)
             print(traceback.format_exc())
+    
+    @staticmethod
+    def _sendClientUpdates() -> None:
+        """
+        Sends the updates for chats to all connected clients.
+        """
+        for u in Inbox._updates:
+            for client in Inbox._connections:
+                sendSocketIO(client, IDIOT(IDIOT_TYPE.UPDATE, u).toString())
+        Inbox._updates = []
 
     @staticmethod
     def _startHeartbeat() -> None:
@@ -452,6 +450,9 @@ class Inbox:
                 
                 if time % CHECK_CLI_TIME == 0:
                     Inbox._cliCheck()
+
+                if time % CHECK_CLI_TIME == 0:
+                    Inbox._sendClientUpdates()
 
                 # If time passes MAX_TIME reset the time to 0
                 if time >= MAX_TIME:

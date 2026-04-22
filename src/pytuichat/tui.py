@@ -1,4 +1,6 @@
 from typing import cast
+import time
+import threading
 
 from textual.app import App, ComposeResult
 from textual.widgets import Input, TextArea, Button, Footer, Header, Label
@@ -53,8 +55,7 @@ class DashboardScreen(Screen[None]):
         """
         yield Header()
         chts: list[Chat] = cli.listChats(_tui.client)
-        yield Vertical(
-            *[
+        self.vertical: Vertical = Vertical(*[
                 Button(
                     f"{c.getUniqueID()} - {c.getNumUnread()}🔔",
                     name=c.getUniqueID(),
@@ -62,14 +63,20 @@ class DashboardScreen(Screen[None]):
                     compact=True,
                 )
                 for c in chts
-            ]
-        )
+            ])
+        yield self.vertical
         yield Footer()
+        self.refresh(layout=True)
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
+        """
+        Handle when the button is pressed. On this page, thats a chat button.
+        """
         if "chatbtn" in event.button.classes:
             _tui.activeChat = cast(str, event.button.name)
             _tui.app.push_screen(MessageScreen())
+
+
 
 class NewChatScreen(Screen[None]):
     """
@@ -212,10 +219,17 @@ class ModesApp(App[None]):
         if len(self.screen_stack) > 1:
             self.pop_screen()
     
+    async def action_quit(self) -> None:
+        """
+        Quit the app.
+        """
+        _tui.client.close()
+        return await super().action_quit()
+
     async def action_kill(self) -> None:
         # return await super().action_quit()
         cli.stop(_tui.client)
-        return await super().action_quit()
+        return await self.action_quit()
     
     async def action_newc(self) -> None:
         if type(self.screen_stack[-1]) == DashboardScreen:
@@ -236,5 +250,24 @@ class ModesApp(App[None]):
         self.switch_mode("dashboard")
 
 def runtui() -> None:
+    """
+    Run the TUI version of the app.
+    """
     _tui.app = ModesApp()
+    ut: threading.Thread = threading.Thread(target=checkUpdates)
+    ut.start()
     _tui.app.run()
+
+def checkUpdates() -> None:
+    """
+    While true, check for updates sent by the inbox.
+    """
+    while True:
+        time.sleep(0.1)
+        if hasData(_tui.client):
+            data: str = IDIOT.fromString(recieveSocketIO(_tui.client)).data
+            if type(_tui.app.screen_stack[-1]) == DashboardScreen:
+                _tui.app.screen_stack[-1].compose()
+            elif type(_tui.app.screen_stack[-1]) == MessageScreen:
+                if data == _tui.activeChat:
+                    _tui.app.screen_stack[-1].updateMessages()

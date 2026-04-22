@@ -18,6 +18,8 @@ class IDIOT_TYPE(Enum):
     GET_CONTACTS = 5
     # Create chat
     CREATE_CHAT = 6
+    # Update
+    UPDATE = 7
 
 class IDIOT:
     def __init__(self, type: IDIOT_TYPE, data: str):
