@@ -21,6 +21,7 @@ For multiple users, separate with a comma. For example: \"UserA\", or
     "pptConsole": "Enter [a command, \"help\" or \"exit\"]\n> ",
     "pptExiting": "Good Bye!",
     "pptEndReq": "End Request",
+    "pptUnknown": "UNKNOWN: ",
 
     "errNotStarted": "ERR: The Inbox program does not seem to be started",
 

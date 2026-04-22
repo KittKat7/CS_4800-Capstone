@@ -240,7 +240,7 @@ def runcli(args: list[str]) -> None:
                     else:
                         print("TODO HELP STRING SETTINGS")
                 case _:
-                    print("UNKNOWN: " + inp[0])
+                    print(getString("pptUnknown") + inp[0])
             
             # Add a line for spacing
             print(getString("pptEndReq"))
