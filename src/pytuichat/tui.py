@@ -171,7 +171,7 @@ class SettingsScreen(Screen[None]):
         yield Vertical(
             *[
                 Button(
-                    f"{k}: {options.get(k)}",
+                    f"{k}: {"On" if options.get(k) else "Off"}",
                     name=k,
                     classes="setbtn",
                     compact=True,
@@ -183,11 +183,19 @@ class SettingsScreen(Screen[None]):
     
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.name == "show_nicknames":
-            cli.updateNicks(not cli.showSettings()["show_nicknames"])
+            option = False if cli.showSettings()["show_nicknames"] else True
+            cli.updateNicks(option)
+            if option:
+                event.button.label = "show_nicknames: On"
+            else:
+                event.button.label = "show_nicknames: Off"
         elif event.button.name == "24_hour_time":
-            cli.updateTwentyFour(not cli.showSettings()["24_hour_time"])
-        _tui.app.pop_screen()
-        _tui.app.push_screen(SettingsScreen())
+            option = False if cli.showSettings()["24_hour_time"] else True
+            cli.updateTwentyFour(option)
+            if option:
+                event.button.label = "24_hour_time: On"
+            else:
+                event.button.label = "24_hour_time: Off"
 
 class ModesApp(App[None]):
     """
