@@ -6,6 +6,8 @@ import time
 import readline #type: ignore
 import traceback
 import sys
+import textwrap
+from shutil import get_terminal_size
 
 from pytuichat.inbox import *
 from pytuichat.filereader import *
@@ -194,7 +196,7 @@ def runcli(args: list[str]) -> None:
 
                 # Handle help command
                 case "help":
-                    print("TODO console help")
+                    print(textwrap.fill(getString("txtHelpCli"), width=get_terminal_size().columns, replace_whitespace=False))
                 
                 # Handle exit command
                 case "exit":
@@ -233,15 +235,15 @@ def runcli(args: list[str]) -> None:
                     if len(inp) == 1:
                         print(showSettings())
                     elif len(inp) != 3:
-                        print("TODO HELP STRING SETTINGS")
-                    elif inp[1] == "24hour" and inp[2] in ["true", "false"]:
+                        print(textwrap.fill(getString("settingHelpCli"), width=get_terminal_size().columns, replace_whitespace=False))
+                    elif inp[1] == "24hour" and inp[2] in ["on", "off"]:
                         print("Updating 24_hour_time")
-                        updateTwentyFour(inp[2] == "true")
-                    elif inp[1] == "nicks" and inp[2] in ["true", "false"]:
+                        updateTwentyFour(inp[2] == "on")
+                    elif inp[1] == "nicks" and inp[2] in ["on", "off"]:
                         print("Updating show_nicknames")
-                        updateNicks(inp[2] == "true")
+                        updateNicks(inp[2] == "on")
                     else:
-                        print("TODO HELP STRING SETTINGS")
+                        print(textwrap.fill(getString("settingHelpCli"), width=get_terminal_size().columns, replace_whitespace=False))
                 case "tmp":
                     sendSocketIO(client, IDIOT(IDIOT_TYPE.PING, "").toString())
                     print(recieveSocketIO(client))

@@ -26,7 +26,21 @@ For multiple users, separate with a comma. For example: \"UserA\", or
     "errNotStarted": "ERR: The Inbox program does not seem to be started",
 
     "txtHelpCli": """
-        TODO Put a help message here!
+Welcome to PyTUIChat! Here is a list of commands and their usage. Arguments in brackets are required, while arguments in parentheses may be omitted.
+\n\nexit: ends the program
+\n\nstart: starts the inbox if it is not already running.
+\n\nstop: stops the inbox running without exiting the program.
+\n\nlist or ls: lists all active chats.
+\n\nread [title] (number): displays number messages from the chat specified by title. Defaults to 10 messages if the number is unspecified, or all messages if the chat has less than number messages.
+\n\nsend [title] [text]: sends a message with the provided text to all participants in the chat specified by title.
+\n\ncreate [userlist]: creates a chat with all the users in userlist. userlist should contain the usernames of all desired chat participants, separated by commas with no spaces.
+\n\nsettings (setting) (new value): if used with no arguments, prints your current settings. Otherwise, changes the value of the given setting to the new value. Use “settings help” for a list of settings and their possible values.
+        """,
+
+    "settingHelpCli": """
+Use "settings" to view your current settings.
+\n\nUse "settings 24hour [value]" to switch between 12-hour and 24-hour time. Value may be "on" or "off".
+\n\nUse "nicks 24hour [value]" to switch between showing usernames and chosen nicknames. Value may be "on" or "off".
         """,
 
     "txtHelpTui": """
