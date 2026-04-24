@@ -137,7 +137,7 @@ class MessageScreen(Screen[None]):
         """
         cli.sendMsg(_tui.client, _tui.activeChat, event.input.value)
         event.input.value = ""
-        self.updateMessages()
+        # self.updateMessages()
 
     def updateMessages(self) -> None:
         self.content.text = cli.getMsgs(_tui.client, _tui.activeChat)
@@ -205,7 +205,7 @@ class ModesApp(App[None]):
         Binding("ctrl+b", "back", "Back", show=True),
         Binding("ctrl+n", "newc", "New Chat", show=True),
         Binding("ctrl+o", "options", "Options", show=True),
-        Binding("h", "help", "Help", show=True),
+        Binding("ctrl+h", "help", "Help", show=True),
     ]
 
     MODES = { #type: ignore

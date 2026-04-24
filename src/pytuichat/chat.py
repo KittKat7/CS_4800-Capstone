@@ -73,15 +73,21 @@ class Chat:
         """
         return self._history
     
-    def getMessageByDate(self, date: datetime) -> Message|None:
+    def getMessageIdByDate(self, date: datetime) -> int:
         """
         Gets the message based on the send date provided, or non if it does not
         exist.
         """
-        for m in self._history:
-            if m.getSent == date:
-                return m
-        return None
+        for i in range(len(self._history)):
+            if self._history[i].getSent().timestamp() == date.timestamp():
+                return i
+        return -1
+
+    def setMessageById(self, id: int, message: Message) -> bool:
+        if id <= 0 or id >= len(self._history):
+            return False
+        self._history[id] = message
+        return True
     
     def getNumUnread(self) -> int:
         """

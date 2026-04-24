@@ -1,8 +1,6 @@
 import socket
 import getpass
 import asyncio
-# TODO cleanup
-# import threading
 import traceback
 
 from pytuichat.message import *
@@ -14,10 +12,6 @@ from pytuichat.filereader import *
 from pytuichat.settings import *
 from pytuichat.debug import *
 from pytuichat.socketio import *
-
-# class _InboxOperation(Enum):
-#     SEND_MESSAGE = None
-#     RECIEVE_MESSAGE = None
 
 class Inbox:
 
@@ -157,6 +151,7 @@ class Inbox:
         # Save chat persistantly
         Inbox._chats[chh.getUniqueID()] = chh
         FileReader.updateChat(chh)
+        Inbox._updates.append(chh.getUniqueID())
         # Return new chat
         return chh
 
@@ -188,18 +183,18 @@ class Inbox:
         Sends a message by adding it to the outbox. The message send loop will
         send the message to contacts when possible.
         """
+
+        messageChanged: bool = False
         # if sending to self...
         if getpass.getuser() in message.getSendingTo():
             message.sentTo(getpass.getuser())
+            messageChanged = True
 
         sendTo: list[str] = message.getSendingTo()
-        print(sendTo)
         for c in sendTo:
             spit: SPIT = SPIT(SPIT.Type.MESSAGE, message.toJsonObj())
 
-            print(c)
             client: socket.socket
-            print("b")
             try:
                 client = createMessageClient(c)
             except:
@@ -212,11 +207,7 @@ class Inbox:
             try:
                 # Receive a response from the server
                 response: SPIT = SPIT.fromString(responseStr)
-                if response.data == SPIT.Status.OK:
-                    print("Message sent successfully")
-                    message.getMessage().updateStatus(MessageStatus.SENT)
-                else:
-                    print("Message not recieved")
+                if response.data != SPIT.Status.OK:
                     continue
             except:
                 continue
@@ -224,20 +215,34 @@ class Inbox:
             # Fail cases will continue to next iteration of the loop, leaving
             # this to run when it succeeds
             message.sentTo(c)
+            messageChanged = True
         
+        ch: Chat = Inbox._findOrCreateChat(message.getChatID())
+        mid: int = ch.getMessageIdByDate(message.getMessage().getSent())
+        m: Message = ch.getMessageHistory()[mid]
         # If the sent timestamp with the timeout is passed by the current date,
         # then timeout the message.
-        timeout: bool = (message.getMessage().getSent() + Message.TIMEOUT).timestamp() < datetime.now().timestamp()
-        if not message.getSendingTo() or timeout:
-            print("timeout: ", timeout)
+        timeout: bool = (message.getMessage().getSent() + Message.TIMEOUT).timestamp() < datetime.now().timestamp() and len(message.getSendingTo()) > 0
+        if not message.getSendingTo():
             if message in Inbox._outbox:
                 Inbox._outbox.remove(message)
-            ch: Chat = Inbox._findOrCreateChat(message.getChatID())
-            for m in ch.getMessageHistory():
-                if m.getSent() == message.getMessage().getSent():
-                    m.updateStatus(MessageStatus.SENT)
-                    break
+            m.updateStatus(MessageStatus.SENT)
+            messageChanged = True
+        
+        if timeout:
+            m.updateStatus(MessageStatus.TIMEOUT)
+            messageChanged = True
+        
+        if messageChanged:
+            print("write!")
+            ch.setMessageById(mid, m)
+            FileReader.updateChat(ch)
+
+            Inbox._updates.append(ch.getUniqueID())
+        
+        if not message.getSendingTo():
             return True
+
 
         if message not in Inbox._outbox:
             Inbox._outbox.append(message)
@@ -317,7 +322,6 @@ class Inbox:
         for c in rml:
             Inbox._connections.remove(c)
 
-        print(Inbox._connections)
 
     @staticmethod
     def _handleCliRecieved(connection: socket.socket) -> None:
@@ -354,7 +358,6 @@ class Inbox:
                     m: Message = dm.getMessage()
                     m.updateStatus(MessageStatus.SENDING)
                     c.updateMessageHistory(dm.getMessage())
-                    FileReader.updateChat(c)
 
                     Inbox._newOutbox.append(dm)
                     r = "sending"
@@ -422,6 +425,7 @@ class Inbox:
         Starts the hearbeat of the inbox.
         """
         asyncio.run(Inbox._heartbeat())
+        # asyncio.run(Inbox._msgHeartbeat())
 
     @staticmethod
     async def _heartbeat() -> None:
@@ -430,31 +434,29 @@ class Inbox:
         """
         MAX_TIME: int = 65535
         MAX_LOWER: int = -65536
-        RESEND_TIME: int = 5
-        CHECK_INBOX_TIME: int = 1
         CHECK_CLI_TIME: int = 1
 
+        RESEND_TIME: int = 5
+        CHECK_INBOX_TIME: int = 1
         time: float = 0
         
         try:
             while Inbox._isRunning:
-                await asyncio.sleep(0.1)
+                await asyncio.sleep(0.001)
 
-                # Handle resent heartbeat
-                if time % RESEND_TIME == 0 or Inbox._newOutbox:
-                    # TODO resend things
-                    Inbox._sendAllMessages()
-
-                # Handle check inbox timeout
-                if time % CHECK_INBOX_TIME == 0:
-                    # TODO check inbox
-                    Inbox._handleMsgConnect()
-                
                 if time % CHECK_CLI_TIME == 0:
                     Inbox._cliCheck()
 
                 if time % CHECK_CLI_TIME == 0:
                     Inbox._sendClientUpdates()
+
+                # Handle resent heartbeat
+                if time % RESEND_TIME == 0 or Inbox._newOutbox:
+                    Inbox._sendAllMessages()
+
+                # Handle check inbox timeout
+                if time % CHECK_INBOX_TIME == 0:
+                    Inbox._handleMsgConnect()
 
                 # If time passes MAX_TIME reset the time to 0
                 if time >= MAX_TIME:
