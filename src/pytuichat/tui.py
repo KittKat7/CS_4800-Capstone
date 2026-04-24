@@ -285,8 +285,5 @@ def checkUpdates() -> None:
                 elif type(_tui.app.screen_stack[-1]) == MessageScreen:
                     if data == _tui.activeChat:
                         _tui.app.screen_stack[-1].updateMessages()
-                with open("./tmpfile", "a") as f:
-                    f.write(data)
     except Exception as e:
-        with open("./tmpfile", "a") as f:
-            f.write(str(e))
+        print(e)
