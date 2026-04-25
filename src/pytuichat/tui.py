@@ -171,7 +171,7 @@ class SettingsScreen(Screen[None]):
         yield Vertical(
             *[
                 Button(
-                    f"{k}: {"On" if options.get(k) else "Off"}",
+                    f"{k}: {'On' if options.get(k) else 'Off'}",
                     name=k,
                     classes="setbtn",
                     compact=True,
