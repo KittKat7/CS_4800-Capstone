@@ -151,7 +151,7 @@ class Inbox:
         # Save chat persistantly
         Inbox._chats[chh.getUniqueID()] = chh
         FileReader.updateChat(chh)
-        Inbox._updates.append(chh.getUniqueID())
+        # Inbox._updates.append(chh.getUniqueID())
         # Return new chat
         return chh
 

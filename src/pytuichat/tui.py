@@ -4,7 +4,7 @@ import threading
 
 from textual.app import App, ComposeResult
 from textual.widgets import Input, TextArea, Button, Footer, Header, Label
-from textual.containers import Vertical
+from textual.containers import ScrollableContainer, Vertical
 from textual.screen import Screen
 from textual.binding import Binding
 
@@ -21,6 +21,7 @@ class _tui:
     client: socket.socket
     running: bool
     ut: threading.Thread
+    updateDash: bool = False
 
 class ErrorMsgScreen(Screen[None]):
     def __init__(self, msg: str):
@@ -57,7 +58,7 @@ class DashboardScreen(Screen[None]):
         """
         yield Header()
         chts: list[Chat] = cli.listChats(_tui.client)
-        self.vertical: Vertical = Vertical(*[
+        self.vertical: ScrollableContainer = ScrollableContainer(*[
                 Button(
                     f"{c.getUniqueID()} - {c.getNumUnread()}🔔",
                     name=c.getUniqueID(),
@@ -68,7 +69,7 @@ class DashboardScreen(Screen[None]):
             ])
         yield self.vertical
         yield Footer()
-        self.refresh(layout=True)
+        
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         """
@@ -106,6 +107,7 @@ class NewChatScreen(Screen[None]):
         chatid = cli.createChat(_tui.client, inp)
         event.input.value = ""
         _tui.activeChat = chatid
+        _tui.updateDash = True
         _tui.app.pop_screen()
         _tui.app.push_screen(MessageScreen())
 
@@ -228,6 +230,8 @@ class ModesApp(App[None]):
     async def action_back(self) -> None:
         if len(self.screen_stack) > 1:
             self.pop_screen()
+        if type(self.screen_stack[-1]) == DashboardScreen and _tui.updateDash:
+            self.screen_stack[-1].refresh(layout=True, recompose=True, repaint=True)
     
     async def action_quit(self) -> None:
         """
