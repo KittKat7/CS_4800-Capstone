@@ -44,6 +44,13 @@ Use "settings" to view your current settings.
         """,
 
     "txtHelpTui": """
-        TODO Put a help message here!
+Welcome to PyTUIChat! You can navigate using tab to cycle through buttons and enter to activate them, or you can interact with buttons using your mouse. Most keybinds are displayed at the bottom of the Terminal User Interface, so check those for a reminder. As for what they do…
+\n\nQuit: exits the TUI without closing the inbox, allowing you to continue receiving messages in the background.
+\n\nKill: exits the TUI and closes the inbox, meaning you will not receive messages until you reactivate the inbox.
+\n\nBack: returns you to the screen you most recently left. For example, using this while viewing a chat would return you to the screen where you view a summary of all your chats.
+\n\nNew chat: opens a screen that prompts you for the usernames of people you wish to create a chat with, separated by commas with no spaces. Press enter to confirm chat creation.
+\n\nOptions: opens a screen that allows you to change how the TUI looks.
+\n\nHelp: you are here!
+\n\nPalette: opens a screen with several commands to use.
         """,
 }
