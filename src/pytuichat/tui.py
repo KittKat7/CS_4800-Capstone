@@ -217,7 +217,7 @@ class ModesApp(App[None]):
         Binding("ctrl+b", "back", "Back", show=True),
         Binding("ctrl+n", "newc", "New Chat", show=True),
         Binding("ctrl+o", "options", "Options", show=True),
-        Binding("ctrl+h", "help", "Help", show=True),
+        Binding("f1", "help", "Help", show=True),
     ]
 
     MODES = { #type: ignore
