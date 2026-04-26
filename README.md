@@ -1,4 +1,4 @@
-# CS_4800-Capstone
+# CS_4800-Capstone (prototype)
 
 ## Developer Guidelines
 
