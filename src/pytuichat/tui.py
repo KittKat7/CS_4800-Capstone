@@ -137,6 +137,8 @@ class MessageScreen(Screen[None]):
         """
         Handle input when the user presses Enter.
         """
+        if len("".join(event.input.value.split())) <= 0:
+            return
         cli.sendMsg(_tui.client, _tui.activeChat, event.input.value)
         event.input.value = ""
         # self.updateMessages()
@@ -285,7 +287,7 @@ def checkUpdates() -> None:
                 data: str = IDIOT.fromString(recieveSocketIO(_tui.client)).data
                 print(data)
                 if type(_tui.app.screen_stack[-1]) == DashboardScreen:
-                    _tui.app.screen_stack[-1].compose()
+                    _tui.app.screen_stack[-1].refresh(layout=True, recompose=True, repaint=True)
                 elif type(_tui.app.screen_stack[-1]) == MessageScreen:
                     if data == _tui.activeChat:
                         _tui.app.screen_stack[-1].updateMessages()
