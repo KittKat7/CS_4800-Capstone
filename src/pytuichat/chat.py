@@ -63,9 +63,8 @@ class Chat:
         messages.
         """
         self._history = [message] + self._history
-        if message.getStatus == MessageStatus.UNREAD:
+        if message.getStatus() == MessageStatus.UNREAD:
             self._numUnread += 1
-        # Write to persistant storage
     
     def getMessageHistory(self) -> list[Message]:
         """
@@ -91,7 +90,7 @@ class Chat:
     
     def getNumUnread(self) -> int:
         """
-        Returns the lumber of unread messages.
+        Returns the number of unread messages.
         """
         return self._numUnread
     
