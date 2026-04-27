@@ -227,7 +227,7 @@ def runcli(args: list[str]) -> None:
                     chat = getMsgs(client, inp[1], int(inp[2] if len(inp) >= 3 else 10))
                     print(chat)
                 case "send":
-                    tf = sendMsg(client, inp[1], inp[2])
+                    tf = sendMsg(client, inp[1], " ".join(inp[2:]))
                     print("Message send:", tf)
                 case "create":
                     print(createChat(client, inp[1]))
