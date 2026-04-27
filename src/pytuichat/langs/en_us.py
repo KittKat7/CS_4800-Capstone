@@ -58,7 +58,7 @@ Welcome to PyTUIChat! You can navigate using tab to cycle through buttons and en
 
     "24HourOn": """24-hour time: On""",
 
-    "NicknamesOff": """Show nicknames, not usernames: Off""",
+    "NicknamesOff": """Nicknames: Off""",
 
-    "NicknamesOn": """Show nicknames, not usernames: On""",
+    "NicknamesOn": """Nicknames: On""",
 }
