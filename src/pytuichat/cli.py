@@ -231,7 +231,7 @@ def runcli(args: list[str]) -> None:
                     print("Message send:", tf)
                 case "create":
                     print(createChat(client, inp[1]))
-                case "settings":
+                case "options":
                     if len(inp) == 1:
                         print(showSettings())
                     elif len(inp) != 3:
