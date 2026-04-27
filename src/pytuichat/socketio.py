@@ -1,7 +1,7 @@
 import os, socket
 from pytuichat.filereader import FileReader
 from pytuichat.stupid import STUPID
-from pytuichat.idiot import IDIOT
+from pytuichat.idiot import IDIOT, IDIOT_TYPE
 from pytuichat.debug import *
 
 # 0o prefix denotes octal
@@ -117,14 +117,21 @@ def singleCliCommand(client: socket.socket | None, idiot: IDIOT) -> IDIOT:
     newSocket: bool = not client
     if newSocket:
         client = createCliClient()
+
     sendSocketIO(client, idiot.toString())
 
-    strt: str = recieveSocketIO(client)
-
+    ridiot: IDIOT
+    rec: bool = True
+    while rec:
+        strt: str = recieveSocketIO(client)
+        ridiot = IDIOT.fromString(strt)
+        if ridiot.type != IDIOT_TYPE.UPDATE:
+            rec = False
+        
     if newSocket:
         client.close()
 
-    return IDIOT.fromString(strt)
+    return ridiot #type: ignore
 
 def hasData(client: socket.socket) -> bool:
     """
