@@ -233,7 +233,15 @@ def runcli(args: list[str]) -> None:
                     print(createChat(client, inp[1]))
                 case "options":
                     if len(inp) == 1:
-                        print(showSettings())
+                        settings = showSettings()
+                        if settings["24_hour_time"]:
+                            print(getString("24HourOn"))
+                        else:
+                            print(getString("24HourOff"))
+                        if settings["show_nicknames"]:
+                            print(getString("NicknamesOn"))
+                        else:
+                            print(getString("NicknamesOff"))
                     elif len(inp) != 3:
                         print(textwrap.fill(getString("settingHelpCli"), width=get_terminal_size().columns, replace_whitespace=False))
                     elif inp[1] == "24hour" and inp[2] in ["on", "off"]:

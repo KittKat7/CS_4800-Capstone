@@ -190,16 +190,16 @@ class SettingsScreen(Screen[None]):
             option = False if cli.showSettings()["show_nicknames"] else True
             cli.updateNicks(option)
             if option:
-                event.button.label = "show_nicknames: On"
+                event.button.label = cli.getString("NicknamesOn")
             else:
-                event.button.label = "show_nicknames: Off"
+                event.button.label = cli.getString("NicknamesOff")
         elif event.button.name == "24_hour_time":
             option = False if cli.showSettings()["24_hour_time"] else True
             cli.updateTwentyFour(option)
             if option:
-                event.button.label = "24_hour_time: On"
+                event.button.label = cli.getString("24HourOn")
             else:
-                event.button.label = "24_hour_time: Off"
+                event.button.label = cli.getString("24HourOff")
 
 class ModesApp(App[None]):
     """
