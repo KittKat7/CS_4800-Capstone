@@ -42,7 +42,7 @@ class LoadingScreen(Screen[None]):
         Compose the page.
         """
         yield Header()
-        yield Label("Page is loading!!! TODO")
+        yield Label(getString("lblLoading"))
 
 class DashboardScreen(Screen[None]):
     """
@@ -95,7 +95,7 @@ class NewChatScreen(Screen[None]):
         """
         yield Header()
         yield Label(getString("lblCreateNewChat"))
-        yield Input(placeholder="Type something here...", id="input")
+        yield Input(placeholder=getString("pptInputPh"), id="input")
         yield Footer()
 
     def on_input_submitted(self, event: Input.Submitted) -> None:
@@ -130,7 +130,7 @@ class MessageScreen(Screen[None]):
         yield Label("<<< " + _tui.activeChat + " >>>", id="label")
         self.content: TextArea = TextArea("", id="content", read_only=True)
         yield self.content
-        yield Input(placeholder="Type something here...", id="input")
+        yield Input(placeholder=getString("pptInputPh"), id="input")
         yield Footer()
 
         self.updateMessages()
@@ -172,7 +172,7 @@ class SettingsScreen(Screen[None]):
 
     def compose(self) -> ComposeResult:
         yield Header()
-        yield Label("Options")
+        yield Label(getString("lblOptions"))
         yield Vertical(
             *[
                 Button(
@@ -211,12 +211,12 @@ class ModesApp(App[None]):
     """
 
     BINDINGS = [
-        Binding("ctrl+k", "kill", "Kill (inbox)", show=True),
-        Binding("ctrl+q", "quit", "Quit", show=True),
-        Binding("ctrl+b", "back", "Back", show=True),
-        Binding("ctrl+n", "newc", "New Chat", show=True),
-        Binding("ctrl+o", "options", "Options", show=True),
-        Binding("f1", "help", "Help", show=True),
+        Binding("ctrl+k", "kill", getString("bndKill"), show=True),
+        Binding("ctrl+q", "quit", getString("bndQuit"), show=True),
+        Binding("ctrl+b", "back", getString("bndBack"), show=True),
+        Binding("ctrl+n", "newc", getString("bndNewc"), show=True),
+        Binding("ctrl+o", "options", getString("bndOptn"), show=True),
+        Binding("f1", "help", getString("bndHelp"), show=True),
     ]
 
     MODES = { #type: ignore

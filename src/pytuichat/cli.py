@@ -209,17 +209,17 @@ def runcli(args: list[str]) -> None:
                     if client:
                         client.close()
                         client = cl
-                        print("Inbox has started")
+                        print(getString("pptStartGood"))
                     else:
-                        print("Inbox failed to start")
+                        print(getString("pptStartBad"))
                 case "ping":
                     if ping():
-                        print("Inbox is running")
+                        print(getString("pptPingRun"))
                     else:
-                        print("Inbox is NOT running")
+                        print(getString("pptPingNo"))
                 case "stop":
                     stop(client)
-                    print("Inbox has stopped")
+                    print(getString("pptStop"))
                 case "ls" | "list":
                     chats = listChats(client)
                     print(_formatChats(chats))
@@ -228,7 +228,7 @@ def runcli(args: list[str]) -> None:
                     print(chat)
                 case "send":
                     tf = sendMsg(client, inp[1], " ".join(inp[2:]))
-                    print("Message send:", tf)
+                    print(getString("pptSend"), tf)
                 case "create":
                     print(createChat(client, inp[1]))
                 case "options":
@@ -245,10 +245,10 @@ def runcli(args: list[str]) -> None:
                     elif len(inp) != 3:
                         print(textwrap.fill(getString("settingHelpCli"), width=get_terminal_size().columns, replace_whitespace=False))
                     elif inp[1] == "24hour" and inp[2] in ["on", "off"]:
-                        print("Updating 24_hour_time")
+                        print(getString("pptOptionTime"))
                         updateTwentyFour(inp[2] == "on")
                     elif inp[1] == "nicks" and inp[2] in ["on", "off"]:
-                        print("Updating show_nicknames")
+                        print(getString("pptOptionNick"))
                         updateNicks(inp[2] == "on")
                     else:
                         print(textwrap.fill(getString("settingHelpCli"), width=get_terminal_size().columns, replace_whitespace=False))

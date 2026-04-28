@@ -12,9 +12,15 @@ language: dict[str, str] = {
     "lblCreateNewChat": """Enter the ID of the chat (usernames, case sensitive).
 For multiple users, separate with a comma. For example: \"UserA\", or
 \"UserA, UserB\"""",
+    "lblLoading": "Page is loading!",
+    "lblOptions": "Options",
 
-    "btnBack": "Back",
-    "btnExit": "Exit",
+    "bndBack": "Back",
+    "bndHelp": "Help",
+    "bndKill": "Kill (inbox)",
+    "bndNewc": "New Chat",
+    "bndOptn": "Options",
+    "bndQuit": "Quit",
 
     "pptInteractive": "PyTUI Chat (Interactive)",
     "pptSingular": "PyTUI Chat (Singular)",
@@ -22,6 +28,15 @@ For multiple users, separate with a comma. For example: \"UserA\", or
     "pptExiting": "Good Bye!",
     "pptEndReq": "End Request",
     "pptUnknown": "UNKNOWN: ",
+    "pptStartGood": "Inbox has started",
+    "pptStartBad": "Inbox failed to start",
+    "pptPingRun": "Inbox is running",
+    "pptPingNo": "Inbox is NOT running",
+    "pptStop": "Inbox has stopped",
+    "pptSend": "Message send:",
+    "pptOptionTime": "Updating 24-hour time option",
+    "pptOptionNick": "Updating show nicknames option",
+    "pptInputPh": "Type something here...",
 
     "errNotStarted": "ERR: The Inbox program does not seem to be started",
 
@@ -36,13 +51,11 @@ Welcome to PyTUIChat! Here is a list of commands and their usage. Arguments in b
 \n\ncreate [userlist]: creates a chat with all the users in userlist. userlist should contain the usernames of all desired chat participants, separated by commas with no spaces.
 \n\noptions (option) (new value): if used with no arguments, prints your current options. Otherwise, changes the value of the given option to the new value. Use “options help” for a list of options and their possible values.
         """,
-
     "settingHelpCli": """
 Use "options" to view your current options.
 \n\nUse "options 24hour [value]" to switch between 12-hour and 24-hour time. Value may be "on" or "off".
 \n\nUse "options nicks [value]" to switch between showing usernames and chosen nicknames. Value may be "on" or "off".
         """,
-
     "txtHelpTui": """
 Welcome to PyTUIChat! You can navigate using tab to cycle through buttons and enter to activate them, or you can interact with buttons using your mouse. Most keybinds are displayed at the bottom of the Terminal User Interface, so check those for a reminder. As for what they do…
 \n\nQuit: exits the TUI without closing the inbox, allowing you to continue receiving messages in the background.
