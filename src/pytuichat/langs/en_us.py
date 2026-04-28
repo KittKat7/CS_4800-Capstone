@@ -54,11 +54,8 @@ Welcome to PyTUIChat! You can navigate using tab to cycle through buttons and en
 \n\nPalette: opens a screen with several commands to use.
         """,
     
-    "24HourOff": "24-Hour: Off",
-
-    "24HourOn": "24-Hour: On",
-
-    "NicknamesOff": "Nicknames: Off",
-
-    "NicknamesOn": "Nicknames: On",
+    "settingTwentyFourOff": "24-Hour: off",
+    "settingTwentyFourOn": "24-Hour: on",
+    "settingNicknamesOff": "Nicknames: off",
+    "settingNicknamesOn": "Nicknames: on",
 }

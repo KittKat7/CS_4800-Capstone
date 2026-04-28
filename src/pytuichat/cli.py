@@ -235,13 +235,13 @@ def runcli(args: list[str]) -> None:
                     if len(inp) == 1:
                         settings = showSettings()
                         if settings["24_hour_time"]:
-                            print(getString("24HourOn"))
+                            print(getString("settingTwentyFourOn"))
                         else:
-                            print(getString("24HourOff"))
+                            print(getString("settingTwentyFourOff"))
                         if settings["show_nicknames"]:
-                            print(getString("NicknamesOn"))
+                            print(getString("settingNicknamesOn"))
                         else:
-                            print(getString("NicknamesOff"))
+                            print(getString("settingNicknamesOff"))
                     elif len(inp) != 3:
                         print(textwrap.fill(getString("settingHelpCli"), width=get_terminal_size().columns, replace_whitespace=False))
                     elif inp[1] == "24hour" and inp[2] in ["on", "off"]:
