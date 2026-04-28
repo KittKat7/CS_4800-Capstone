@@ -88,7 +88,7 @@ def _formatMessage(msg: Message) -> str:
             mStatus = getString("mrkRead")
     strTime: str
     if sm.getSettingsManager().get24Hour():
-        strTime: str = str(msg.getSent().strftime("%Y%m%d %H%M%p"))
+        strTime: str = str(msg.getSent().strftime("%Y%m%d %H%M"))
     else:
         strTime: str = str(msg.getSent().strftime("%Y%m%d %I%M%p"))
 
