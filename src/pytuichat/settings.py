@@ -45,15 +45,9 @@ class SettingsManager:
         Changes the show nicknames setting to the new value val.
         """
         self._showNicknames = val
-        settings = FileReader.getSettings()
-        settings['show_nicknames'] = val
-        FileReader.updateSettings(settings)
 
     def set24Hour(self, val: bool):
         """
         Changes the 24 hour time setting to the new value val.
         """
         self._24Hour = val
-        settings = FileReader.getSettings()
-        settings['24_hour_time'] = val
-        FileReader.updateSettings(settings)
