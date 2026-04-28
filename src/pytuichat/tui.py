@@ -12,6 +12,7 @@ from pytuichat.lang import *
 from pytuichat import cli
 from pytuichat.chat import Chat
 from pytuichat.socketio import *
+from pytuichat.settings import SettingsManager
 
 setLangMap("en_us")
 
@@ -22,6 +23,7 @@ class _tui:
     running: bool
     ut: threading.Thread
     updateDash: bool = False
+    options: SettingsManager
 
 class ErrorMsgScreen(Screen[None]):
     def __init__(self, msg: str):
@@ -171,35 +173,32 @@ class SettingsScreen(Screen[None]):
     def compose(self) -> ComposeResult:
         yield Header()
         yield Label("Options")
-        options: dict[str, bool] = cli.showSettings()
         yield Vertical(
             *[
                 Button(
-                    f"{k}: {'On' if options.get(k) else 'Off'}",
-                    name=k,
+                    getString("24HourOn") if _tui.options.get24Hour() else getString("24HourOff"),
+                    name="24hour",
                     classes="setbtn",
-                    compact=True,
-                )
-            for k in options.keys()
+                    compact=True
+                ),
+                Button(
+                    getString("NicknamesOn") if _tui.options.getShowNicknames() else getString("NicknamesOff"),
+                    name="nicknames",
+                    classes="setbtn",
+                    compact=True
+                ),
             ]
         )
         yield Footer()
+        # raise Exception(_tui.options.get24Hour())
     
     def on_button_pressed(self, event: Button.Pressed) -> None:
-        if event.button.name == "show_nicknames":
-            option = False if cli.showSettings()["show_nicknames"] else True
-            cli.updateNicks(option)
-            if option:
-                event.button.label = cli.getString("NicknamesOn")
-            else:
-                event.button.label = cli.getString("NicknamesOff")
-        elif event.button.name == "24_hour_time":
-            option = False if cli.showSettings()["24_hour_time"] else True
-            cli.updateTwentyFour(option)
-            if option:
-                event.button.label = cli.getString("24HourOn")
-            else:
-                event.button.label = cli.getString("24HourOff")
+        if event.button.name == "24hour":
+            _tui.options.set24Hour(not _tui.options.get24Hour())
+            event.button.label = getString("24HourOn") if _tui.options.get24Hour() else getString("24HourOff")
+        elif event.button.name == "nicknames":
+            _tui.options.setShowNicknames(not _tui.options.getShowNicknames())
+            event.button.label = getString("NicknamesOn") if _tui.options.getShowNicknames() else getString("NicknamesOff")
 
 class ModesApp(App[None]):
     """
@@ -272,6 +271,7 @@ def runtui() -> None:
     """
     Run the TUI version of the app.
     """
+    _tui.options = SettingsManager.getSettingsManager()
     _tui.app = ModesApp()
     _tui.ut = threading.Thread(target=checkUpdates)
     _tui.app.run()
