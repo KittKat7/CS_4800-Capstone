@@ -176,13 +176,13 @@ class SettingsScreen(Screen[None]):
         yield Vertical(
             *[
                 Button(
-                    getString("settingTwentyFourOn") if _tui.options.get24Hour() else getString("settingTwentyFourOff"),
+                    getString("optTwentyFourOn") if _tui.options.get24Hour() else getString("optTwentyFourOff"),
                     name="24hour",
                     classes="setbtn",
                     compact=True
                 ),
                 Button(
-                    getString("settingNicknamesOn") if _tui.options.getShowNicknames() else getString("settingNicknamesOff"),
+                    getString("optNicknamesOn") if _tui.options.getShowNicknames() else getString("optNicknamesOff"),
                     name="nicknames",
                     classes="setbtn",
                     compact=True
@@ -195,10 +195,10 @@ class SettingsScreen(Screen[None]):
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.name == "24hour":
             _tui.options.set24Hour(not _tui.options.get24Hour())
-            event.button.label = getString("settingTwentyFourOn") if _tui.options.get24Hour() else getString("settingTwentyFourOff")
+            event.button.label = getString("optTwentyFourOn") if _tui.options.get24Hour() else getString("optTwentyFourOff")
         elif event.button.name == "nicknames":
             _tui.options.setShowNicknames(not _tui.options.getShowNicknames())
-            event.button.label = getString("settingNicknamesOn") if _tui.options.getShowNicknames() else getString("settingNicknamesOff")
+            event.button.label = getString("optNicknamesOn") if _tui.options.getShowNicknames() else getString("optNicknamesOff")
 
 class ModesApp(App[None]):
     """

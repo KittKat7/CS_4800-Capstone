@@ -38,6 +38,11 @@ For multiple users, separate with a comma. For example: \"UserA\", or
     "pptOptionNick": "Updating show nicknames option",
     "pptInputPh": "Type something here...",
 
+    "optTwentyFourOff": "24-Hour: off",
+    "optTwentyFourOn": "24-Hour: on",
+    "optNicknamesOff": "Nicknames: off",
+    "optNicknamesOn": "Nicknames: on",
+
     "errNotStarted": "ERR: The Inbox program does not seem to be started",
 
     "txtHelpCli": """
@@ -66,9 +71,4 @@ Welcome to PyTUIChat! You can navigate using tab to cycle through buttons and en
 \n\nHelp: you are here!
 \n\nPalette: opens a screen with several commands to use.
         """,
-    
-    "settingTwentyFourOff": "24-Hour: off",
-    "settingTwentyFourOn": "24-Hour: on",
-    "settingNicknamesOff": "Nicknames: off",
-    "settingNicknamesOn": "Nicknames: on",
 }
