@@ -243,7 +243,7 @@ def runcli(args: list[str]) -> None:
                         else:
                             print(getString("optNicknamesOff"))
                     elif len(inp) != 3:
-                        print(textwrap.fill(getString("settingHelpCli"), width=get_terminal_size().columns, replace_whitespace=False))
+                        print(textwrap.fill(getString("txtHelpCliOptions"), width=get_terminal_size().columns, replace_whitespace=False))
                     elif inp[1] == "24hour" and inp[2] in ["on", "off"]:
                         print(getString("pptOptionTime"))
                         updateTwentyFour(inp[2] == "on")
@@ -251,7 +251,7 @@ def runcli(args: list[str]) -> None:
                         print(getString("pptOptionNick"))
                         updateNicks(inp[2] == "on")
                     else:
-                        print(textwrap.fill(getString("settingHelpCli"), width=get_terminal_size().columns, replace_whitespace=False))
+                        print(textwrap.fill(getString("txtHelpCliOptions"), width=get_terminal_size().columns, replace_whitespace=False))
                 case "tmp":
                     sendSocketIO(client, IDIOT(IDIOT_TYPE.PING, "").toString())
                     print(recieveSocketIO(client))

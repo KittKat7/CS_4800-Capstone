@@ -56,7 +56,7 @@ Welcome to PyTUIChat! Here is a list of commands and their usage. Arguments in b
 \n\ncreate [userlist]: creates a chat with all the users in userlist. userlist should contain the usernames of all desired chat participants, separated by commas with no spaces.
 \n\noptions (option) (new value): if used with no arguments, prints your current options. Otherwise, changes the value of the given option to the new value. Use “options help” for a list of options and their possible values.
         """,
-    "settingHelpCli": """
+    "txtHelpCliOptions": """
 Use "options" to view your current options.
 \n\nUse "options 24hour [value]" to switch between 12-hour and 24-hour time. Value may be "on" or "off".
 \n\nUse "options nicks [value]" to switch between showing usernames and chosen nicknames. Value may be "on" or "off".
