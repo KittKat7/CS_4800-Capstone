@@ -7,6 +7,7 @@ name = "pytuichat"
 version = "0.1.0"
 authors = [
   { name="KittKat", email="kittkat@kittkat.xyz" },
+  { name="Daniel K", email="" },
 ]
 description = "A terminal based messaging app for users on the same server"
 readme = "README.md"
